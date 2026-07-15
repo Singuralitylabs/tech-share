@@ -27,11 +27,16 @@ tech-share/
 - **`themes/singularity.css`** … 全デッキ共通のデザイン。社内フォーマットを CSS で再現し、ロゴ・表紙背景をデータ URI で内包した**自己完結テーマ**。デザイン変更はこのファイルを編集する（→[共有テーマ](#共有テーマ-themessingularitycss)）。
 - **`assets/`** … テーマに埋め込んだ画像の元データ。テーマがデータ URI で内包しているため、レンダリング時には参照されない（保管用）。
 
-### 収録デッキ
+### 命名規則
 
-| デッキ | 内容 | 枚数 | 企画書 |
-|---|---|---|---|
-| `decks/20260715_ai-trend.md` | 生成AIトレンド（2026年7月時点） | 27（本編24＋APPENDIX 3） | `docs/20260715_ai-trend.md` |
+デッキと企画書は **`YYYYMMDD_<topic>.md`** で揃えます（`YYYYMMDD` は発表日）。両者が同じ basename を持つことで、
+`docs/` と `decks/` の対応が一目で分かります。収録済みのデッキは `decks/` を直接見てください。
+
+```
+docs/20260101_example.md   ←→   decks/20260101_example.md
+```
+
+以降のコマンド例では、対象デッキの basename を `DECK` に入れて使います。
 
 ## 必要環境
 
@@ -57,7 +62,8 @@ npx @marp-team/marp-cli -s decks
 ### B. 専用プレビューウィンドウ
 
 ```bash
-npx @marp-team/marp-cli -w -p decks/20260715_ai-trend.md </dev/null
+DECK=YYYYMMDD_topic   # ← 対象デッキの basename（decks/$DECK.md）
+npx @marp-team/marp-cli -w -p "decks/$DECK.md" </dev/null
 ```
 
 `-p`（preview）でウィンドウが開き、`-w`（watch）で編集を自動反映します。GUI と Chrome（`CHROME_PATH`）が必要です。
@@ -80,17 +86,19 @@ npx @marp-team/marp-cli -w -p decks/20260715_ai-trend.md </dev/null
 cd articles/slides/tech-share
 export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
+DECK=YYYYMMDD_topic   # ← 対象デッキの basename（decks/$DECK.md）
+
 # HTML
-npx @marp-team/marp-cli --no-stdin decks/20260715_ai-trend.md -o build/20260715_ai-trend.html </dev/null
+npx @marp-team/marp-cli --no-stdin "decks/$DECK.md" -o "build/$DECK.html" </dev/null
 
 # PDF
-npx @marp-team/marp-cli --no-stdin --pdf decks/20260715_ai-trend.md -o build/20260715_ai-trend.pdf </dev/null
+npx @marp-team/marp-cli --no-stdin --pdf "decks/$DECK.md" -o "build/$DECK.pdf" </dev/null
 
 # PowerPoint
-npx @marp-team/marp-cli --no-stdin --pptx decks/20260715_ai-trend.md -o build/20260715_ai-trend.pptx </dev/null
+npx @marp-team/marp-cli --no-stdin --pptx "decks/$DECK.md" -o "build/$DECK.pptx" </dev/null
 
 # 各スライドを PNG 画像に（確認用。リポジトリを汚さないよう /tmp へ）
-npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /tmp/slide.png </dev/null
+npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.png </dev/null
 ```
 
 ## 注意点（ハマりどころ）
@@ -126,7 +134,7 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 
 ## 共有テーマ（`themes/singularity.css`）
 
-全デッキのデザインはこの 1 ファイルに集約されています。社内スライドフォーマット（`スライドフォーマット.pdf`「シンギュラリティ・ラボ」）を CSS で再現し、ロゴと表紙背景をデータ URI で内包した**自己完結テーマ**です。
+全デッキのデザインはこの 1 ファイルに集約されています。社内スライドフォーマット（「シンギュラリティ・ラボ」）を CSS で再現し、ロゴと表紙背景をデータ URI で内包した**自己完結テーマ**です。元フォーマットの PDF は、デザインを CSS に取り込み終えたため削除済みです（必要なら Git 履歴から取り出せます）。
 
 - **先頭**：`/* @theme singularity */` ＋ `@import 'default';`（`default` テーマを継承）。
 - **配色**：白背景 `#f9fafc` ＋ 濃紺→シアンのグラデーション **`#014e94` → `#66c5d2`**（見出し下線・矢印・強調）。本文は濃グレー、太字は濃紺。
@@ -163,12 +171,8 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 
 ## 補足：バージョン管理
 
-`.html` / `.pdf` / `.pptx` / `slide.*.png` は生成物です。Git 管理を始める場合は `.gitignore` に追加することを推奨します
-（`themes/` `assets/` `.marprc.yml` `.vscode/` はソースなので**除外しない**）。
+生成物は `build/` にまとめ、`.gitignore` で除外しています。`docs/` `decks/` `themes/` `assets/`
+`.marprc.yml` `.vscode/` はソースなので追跡します。
 
-```gitignore
-*.html
-*.pdf
-*.pptx
-slide.*.png
-```
+`.gitignore` は `build/` に加えて、`-o` の付け忘れで生成物が `decks/` に落ちた場合の保険も持っています。
+確認用の PNG はリポジトリ内に出さず、`/tmp` などへ書き出してください。

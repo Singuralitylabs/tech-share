@@ -15,7 +15,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `.marprc.yml` — Marp CLI 設定。`themeSet: ["./themes"]` によりテーマを自動登録し、`theme: singularity` を解決する。`allowLocalFiles: true` も設定済み。**`inputDir` は意図的に設定していない**（理由は下記「ハマりどころ」）。
 - `.vscode/settings.json` — VS Code / Cursor の Marp 拡張向け。テーマ登録（`markdown.marp.themes`）と `markdown.marp.html: true`（インライン HTML 有効化）。
 - `assets/` — テーマ画像の元データ（`logo.png`, `title-bg.png`）。**テーマにはデータ URI として埋め込み済み**のため、レンダリング時に参照されるわけではない（元素材の保管）。
-- `スライドフォーマット.pdf` — デザインの元になった社内フォーマット。**デザインは `themes/singularity.css` に取り込み済みで、今後レンダリングに使わない**（解析が遅いため）。**これは生成物ではなく元素材**なので追跡する（`.gitignore` が `*.pdf` を一律に無視していないのはこのため）。
+
+デザインの元になった社内フォーマット（`スライドフォーマット.pdf`）は、`themes/singularity.css` への取り込みが完了したため削除済み。必要になったら Git 履歴（初回コミット）から取り出せる。
 
 新しいデッキを作るとき：`docs/` に企画書を追加 → 同じ basename の `.md` を `decks/` に作成 → front matter に `theme: singularity` と書き、レイアウトは `_class` で指定する（インライン `<style>` は不要）。
 
@@ -52,7 +53,7 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 
 ## テーマ（`themes/singularity.css`）
 
-全デッキのデザインはこの 1 ファイルに集約されている。社内フォーマット（`スライドフォーマット.pdf`「シンギュラリティ・ラボ」）を CSS で再現したもの。**自己完結**（ロゴ・表紙背景をデータ URI で内包）しているため、このファイルを他リポジトリにコピーして登録するだけで再利用できる。
+全デッキのデザインはこの 1 ファイルに集約されている。社内フォーマット（「シンギュラリティ・ラボ」）を CSS で再現したもの。**自己完結**（ロゴ・表紙背景をデータ URI で内包）しているため、このファイルを他リポジトリにコピーして登録するだけで再利用できる。
 
 - 先頭は `/* @theme singularity */` ＋ `@import 'default';`。**default テーマを継承**しているので、ページ番号などの基本挙動と、default（GitHub-markdown）由来の高詳細度な表・引用 CSS の両方が入る。後者に勝つため、表・引用の色/背景の上書きには **`!important` が必要**（意図的）。
 - 配色：白 `#f9fafc`、濃紺→シアンのグラデ `#014e94 → #66c5d2`、太字＝濃紺。フォント：Noto Sans JP ＋ Inter。
