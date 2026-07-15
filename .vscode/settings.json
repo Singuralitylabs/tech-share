@@ -1,0 +1,4 @@
+{
+  "markdown.marp.themes": ["./themes/singularity.css"],
+  "markdown.marp.html": true
+}

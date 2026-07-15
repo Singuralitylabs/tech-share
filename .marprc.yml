@@ -1,0 +1,7 @@
+# Marp CLI config — auto-loaded when running `npx marp` from the repo root.
+# Registers the shared theme so any deck can use `theme: singularity` in its front matter.
+themeSet:
+  - "./themes"
+# Allow local image files (e.g. screenshots) during headless export without passing --allow-local-files.
+# The theme's own logo / title background are embedded as data URIs, so they never need this.
+allowLocalFiles: true
