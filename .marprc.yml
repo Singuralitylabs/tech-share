@@ -1,7 +1,14 @@
 # Marp CLI config — auto-loaded when running `npx marp` from the repo root.
 # Registers the shared theme so any deck can use `theme: singularity` in its front matter.
+# Paths are resolved from the repo root, so decks living in decks/ still resolve the theme.
 themeSet:
   - "./themes"
 # Allow local image files (e.g. screenshots) during headless export without passing --allow-local-files.
 # The theme's own logo / title background are embedded as data URIs, so they never need this.
 allowLocalFiles: true
+
+# NOTE: `inputDir` is deliberately NOT set here.
+# Setting it would map decks/ -> build/ automatically, but marp-cli then rejects any command
+# that names a file ("Cannot pass files together with input directory"), which kills the
+# single-deck PNG export used to eyeball changes. Pass the path and `-o` explicitly instead:
+#   npx @marp-team/marp-cli --no-stdin decks/<deck>.md -o build/<deck>.html </dev/null

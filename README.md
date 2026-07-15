@@ -1,7 +1,7 @@
 # tech-share スライド
 
 社内向け Tech Share 用のプレゼン資料を **Marp（Markdown → スライド）** で管理するリポジトリです。
-`docs/` の企画書をもとに、リポジトリ直下に Marp 形式の `.md` デッキを作成します。
+`docs/` の企画書をもとに、`decks/` に Marp 形式の `.md` デッキを作成します。
 
 ## ディレクトリ構成
 
@@ -9,26 +9,29 @@
 tech-share/
 ├── docs/                     # 企画書（プレゼンの骨子・台本）
 │   └── YYYYMMDD_*.md
+├── decks/                    # Marp デッキ本体（docs/ と同じ basename）
+│   └── YYYYMMDD_*.md
+├── build/                    # 書き出した生成物（再生成可能・git 管理外）
+│   └── YYYYMMDD_*.html / .pdf / .pptx
 ├── themes/                   # 共有 Marp テーマ（デザインの実体）
 │   └── singularity.css       # 社内フォーマットを再現した自己完結テーマ
 ├── assets/                   # テーマ画像の元データ（logo.png / title-bg.png）
 ├── .marprc.yml               # Marp CLI 設定（テーマ自動登録）
 ├── .vscode/settings.json     # VS Code / Cursor 拡張向け設定
-├── YYYYMMDD_*.md             # Marp デッキ本体（docs/ と同じ basename）
-├── *.html / *.pdf / *.pptx   # 書き出した生成物（再生成可能・コミット不要）
 └── README.md
 ```
 
 - **`docs/`** … 企画書。タイムテーブル、各スライドの中身、「ひとことスライド文言案」などを記載。
+- **`decks/`** … Marp デッキ。front matter に `theme: singularity` を書くだけでデザインが適用される。対応する企画書と同じファイル名にする運用。
+- **`build/`** … 書き出し先。`-o` で明示的にここへ出す。中身はいつでも捨てて再生成できる。
 - **`themes/singularity.css`** … 全デッキ共通のデザイン。社内フォーマットを CSS で再現し、ロゴ・表紙背景をデータ URI で内包した**自己完結テーマ**。デザイン変更はこのファイルを編集する（→[共有テーマ](#共有テーマ-themessingularitycss)）。
 - **`assets/`** … テーマに埋め込んだ画像の元データ。テーマがデータ URI で内包しているため、レンダリング時には参照されない（保管用）。
-- **リポジトリ直下の `.md`** … Marp デッキ。front matter に `theme: singularity` を書くだけでデザインが適用される。対応する企画書と同じファイル名にする運用。
 
 ### 収録デッキ
 
 | デッキ | 内容 | 枚数 | 企画書 |
 |---|---|---|---|
-| `20260715_ai-trend.md` | 生成AIトレンド 2026 上半期アップデート | 20 | `docs/20260715_ai-trend.md` |
+| `decks/20260715_ai-trend.md` | 生成AIトレンド（2026年7月時点） | 27（本編24＋APPENDIX 3） | `docs/20260715_ai-trend.md` |
 
 ## 必要環境
 
@@ -44,16 +47,17 @@ tech-share/
 ```bash
 cd articles/slides/tech-share
 export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-npx @marp-team/marp-cli -s .
+npx @marp-team/marp-cli -s decks
 ```
 
-`-s`（server）でこのフォルダを配信します。表示される `http://localhost:8080` をブラウザで開くと、
+`-s`（server）で `decks/` を配信します。表示される `http://localhost:8080` をブラウザで開くと、
 `.md` を保存するたびに **自動リロード** されます。サーバーは起動しっぱなしなので、別タブで動かしておくと便利です。
+（8080 が埋まっている場合は `PORT=8099 npx @marp-team/marp-cli -s decks` のように変更できます）
 
 ### B. 専用プレビューウィンドウ
 
 ```bash
-npx @marp-team/marp-cli -w -p 20260715_ai-trend.md </dev/null
+npx @marp-team/marp-cli -w -p decks/20260715_ai-trend.md </dev/null
 ```
 
 `-p`（preview）でウィンドウが開き、`-w`（watch）で編集を自動反映します。GUI と Chrome（`CHROME_PATH`）が必要です。
@@ -69,23 +73,24 @@ npx @marp-team/marp-cli -w -p 20260715_ai-trend.md </dev/null
 
 ## 書き出し（HTML / PDF / PPTX）
 
-リポジトリ直下で実行すると `.marprc.yml` が自動で読み込まれ、テーマ（`theme: singularity`）が解決されます。`--theme-set` は不要です。
+**リポジトリ直下で実行**すると `.marprc.yml` が自動で読み込まれ、テーマ（`theme: singularity`）が解決されます。`--theme-set` は不要です。
+デッキは `decks/` にあるのでパスを付け、書き出し先は `-o` で `build/` を指定します。
 
 ```bash
 cd articles/slides/tech-share
 export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 # HTML
-npx @marp-team/marp-cli --no-stdin 20260715_ai-trend.md -o 20260715_ai-trend.html </dev/null
+npx @marp-team/marp-cli --no-stdin decks/20260715_ai-trend.md -o build/20260715_ai-trend.html </dev/null
 
 # PDF
-npx @marp-team/marp-cli --no-stdin --pdf 20260715_ai-trend.md </dev/null
+npx @marp-team/marp-cli --no-stdin --pdf decks/20260715_ai-trend.md -o build/20260715_ai-trend.pdf </dev/null
 
 # PowerPoint
-npx @marp-team/marp-cli --no-stdin --pptx 20260715_ai-trend.md </dev/null
+npx @marp-team/marp-cli --no-stdin --pptx decks/20260715_ai-trend.md -o build/20260715_ai-trend.pptx </dev/null
 
-# 各スライドを PNG 画像に
-npx @marp-team/marp-cli --no-stdin --images png 20260715_ai-trend.md -o slide.png </dev/null
+# 各スライドを PNG 画像に（確認用。リポジトリを汚さないよう /tmp へ）
+npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /tmp/slide.png </dev/null
 ```
 
 ## 注意点（ハマりどころ）
@@ -99,11 +104,20 @@ npx @marp-team/marp-cli --no-stdin --images png 20260715_ai-trend.md -o slide.pn
   インライン HTML（`<br>` など）が反映されません。`.vscode/settings.json` で有効化済みです。
 - **`!important` の上書き**：テーマは `default`（GitHub 由来）を `@import` して継承しているため、
   表・引用が淡色になる箇所を `!important` で上書きしています。色を調整する際はこの点に注意してください。
+- **`-o` を省略すると `decks/` が汚れる**。`--pdf` / `--pptx` は既定でデッキの隣に書き出します。
+  `.gitignore` で保険をかけていますが、`-o build/...` を付けるのが正です。
+- **`.marprc.yml` に `inputDir` を足さない**。`decks/` → `build/` を自動化できそうに見えますが、設定すると
+  ファイル名を渡すコマンドが全部 `[ERROR] Cannot pass files together with input directory.` で落ちます。
+  1 枚だけ PNG 化して確認する手段が失われるため、パスと `-o` を都度書く方を選んでいます。
+- **1 スライドに `_class` を 2 行書かない**。Marp は後勝ちで、先に書いた方が黙って捨てられます。
+  複数クラスは `<!-- _class: refs split src -->` のように半角スペース区切りで 1 行にまとめてください。
+- **はみ出しは警告されない**。Marp は本文が画面外へあふれても黙って切り落とします。とくに `split`
+  （右パネル）は本文幅を半分にするため、項目の多いスライドで下が消えます。スライドを足したら PNG で確認を。
 
 ## 新しいデッキを作るには
 
 1. `docs/` に企画書 `YYYYMMDD_*.md` を用意する。
-2. リポジトリ直下に **同じ basename** の Marp デッキ `.md` を作成し、front matter に `theme: singularity` を書く。
+2. `decks/` に **同じ basename** の Marp デッキ `.md` を作成し、front matter に `theme: singularity` を書く。
 3. 企画書の「ひとことスライド文言案」を見出しに、要点は 3〜4 項目に圧縮する（1 枚 1 メッセージ）。
 4. レイアウトは各スライドの `<!-- _class: ... -->` で切り替える（下記クラス一覧）。
 

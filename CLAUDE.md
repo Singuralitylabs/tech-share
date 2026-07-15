@@ -9,38 +9,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## リポジトリの構成モデル
 
 - `docs/YYYYMMDD_*.md` — **企画書**（骨子・台本）。タイムテーブル、各スライドの中身、見出しにそのまま使う「ひとことスライド文言案」を含む。
-- リポジトリ直下の `YYYYMMDD_*.md` — **Marp デッキ**。対応する企画書と同じ basename を持つ。これが成果物。デッキ自身はスタイルを持たず、front matter で `theme: singularity` を指定するだけ。
+- `decks/YYYYMMDD_*.md` — **Marp デッキ**。対応する企画書と同じ basename を持つ。これが成果物。デッキ自身はスタイルを持たず、front matter で `theme: singularity` を指定するだけ。
+- `build/` — **生成物の置き場**。`-o` で明示的にここへ書き出す。git 管理外。
 - `themes/singularity.css` — **共有 Marp テーマ**。全デッキのデザイン（配色・レイアウトクラス・ロゴ・表紙背景）はここに集約されている。詳細は下記「テーマ」。
-- `.marprc.yml` — Marp CLI 設定。`themeSet: ["./themes"]` によりテーマを自動登録し、`theme: singularity` を解決する。`allowLocalFiles: true` も設定済み。
+- `.marprc.yml` — Marp CLI 設定。`themeSet: ["./themes"]` によりテーマを自動登録し、`theme: singularity` を解決する。`allowLocalFiles: true` も設定済み。**`inputDir` は意図的に設定していない**（理由は下記「ハマりどころ」）。
 - `.vscode/settings.json` — VS Code / Cursor の Marp 拡張向け。テーマ登録（`markdown.marp.themes`）と `markdown.marp.html: true`（インライン HTML 有効化）。
 - `assets/` — テーマ画像の元データ（`logo.png`, `title-bg.png`）。**テーマにはデータ URI として埋め込み済み**のため、レンダリング時に参照されるわけではない（元素材の保管）。
-- `スライドフォーマット.pdf` — デザインの元になった社内フォーマット。**デザインは `themes/singularity.css` に取り込み済みで、今後レンダリングに使わない**（解析が遅いため）。
-- `*.html` / `*.pdf` / `*.pptx` — 生成物。再生成可能でソースではない。
+- `スライドフォーマット.pdf` — デザインの元になった社内フォーマット。**デザインは `themes/singularity.css` に取り込み済みで、今後レンダリングに使わない**（解析が遅いため）。**これは生成物ではなく元素材**なので追跡する（`.gitignore` が `*.pdf` を一律に無視していないのはこのため）。
 
-新しいデッキを作るとき：`docs/` に企画書を追加 → 同じ basename の `.md` を直下に作成 → front matter に `theme: singularity` と書き、レイアウトは `_class` で指定する（インライン `<style>` は不要）。
+新しいデッキを作るとき：`docs/` に企画書を追加 → 同じ basename の `.md` を `decks/` に作成 → front matter に `theme: singularity` と書き、レイアウトは `_class` で指定する（インライン `<style>` は不要）。
 
 ## コマンド
 
-先に必ず `export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"` を実行する（PDF/PPTX/PNG 書き出しとプレビューウィンドウに必要）。`npx marp` はリポジトリ直下で実行すると `.marprc.yml` を自動で読み込むため、`--theme-set` は不要。
+先に必ず `export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"` を実行する（PDF/PPTX/PNG 書き出しとプレビューウィンドウに必要）。**必ずリポジトリ直下で実行する**（`.marprc.yml` が自動で読まれ、テーマが解決される。`--theme-set` は不要）。デッキは `decks/` にあるのでパスを付け、書き出し先は `-o` で `build/` を明示する。
 
 ```bash
-# ブラウザでライブプレビュー（ディレクトリを HTTP 配信し、保存で自動リロード）
-npx @marp-team/marp-cli -s .
+# ブラウザでライブプレビュー（decks/ を HTTP 配信し、保存で自動リロード）
+npx @marp-team/marp-cli -s decks
 
-# 書き出し（HTML / PDF / PPTX / スライドごとの PNG）
-npx @marp-team/marp-cli --no-stdin 20260715_ai-trend.md -o 20260715_ai-trend.html </dev/null
-npx @marp-team/marp-cli --no-stdin --pdf      20260715_ai-trend.md </dev/null
-npx @marp-team/marp-cli --no-stdin --pptx     20260715_ai-trend.md </dev/null
-npx @marp-team/marp-cli --no-stdin --images png 20260715_ai-trend.md -o slide.png </dev/null
+# 書き出し（HTML / PDF / PPTX）
+npx @marp-team/marp-cli --no-stdin decks/20260715_ai-trend.md -o build/20260715_ai-trend.html </dev/null
+npx @marp-team/marp-cli --no-stdin --pdf  decks/20260715_ai-trend.md -o build/20260715_ai-trend.pdf  </dev/null
+npx @marp-team/marp-cli --no-stdin --pptx decks/20260715_ai-trend.md -o build/20260715_ai-trend.pptx </dev/null
+
+# スライドごとの PNG（見た目の確認用。スクラッチパッドに出して Read する）
+npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /tmp/slide.png </dev/null
 ```
 
-デッキ変更の**視覚的な確認**は PNG 書き出しが基本手段（生成された `slide.*.png` を Read する）。
+デッキ変更の**視覚的な確認**は PNG 書き出しが基本手段（生成された `slide.*.png` を Read する）。確認用の PNG はリポジトリに置かず、スクラッチパッド等に出す。
+
+`--pdf` / `--pptx` で `-o` を省略すると、生成物が**デッキの隣（`decks/`）に落ちる**。`.gitignore` で保険をかけてあるが、`-o build/...` を付けるのが正。
 
 ### 非自明なポイント（ハマりどころ）
 
 - **`--no-stdin` と `</dev/null` は必須**。非対話シェルでは、これらが無いと marp-cli が標準入力待ちでブロックし、止まって見える（"Currently waiting data from stdin stream"）。
 - **`--allow-local-files` は不要**。テーマのロゴ・表紙背景はデータ URI 埋め込みで、デッキはローカル画像を参照しない。将来デッキにローカル画像（スクショ等）を足す場合に備え、`.marprc.yml` に `allowLocalFiles: true` を入れてあるので、その場合もフラグは要らない。
 - **VS Code / Cursor の Marp 拡張**は `.vscode/settings.json` でテーマ登録と `markdown.marp.html: true` を済ませてある。デッキはインライン HTML（`<br>`, `<p class="kicker">`）を使うため html 有効化が必要。
+- **`.marprc.yml` に `inputDir` を足さないこと**。`decks/` → `build/` を自動で対応付けられて一見便利だが、設定した瞬間にファイル名を渡すコマンドが全部 `[ERROR] Cannot pass files together with input directory.` で落ちる。1枚だけ PNG に書き出して見た目を確認する手段が失われるので、パスと `-o` を都度明示する方を選んでいる。
+- **`_class` を1スライドに2行書かない**。Marp は後勝ちで、先に書いた方が黙って捨てられる（例：`<!-- _class: refs split -->` の直後に `<!-- _class: src -->` を書くと `refs split` が消える）。複数クラスは `<!-- _class: refs split src -->` のように半角スペース区切りで1行にまとめる。
+- **`section.refs`（18px）と `section.src`（15px）は font-size が衝突する**。CSS 上 `refs` が後に定義されているため、両方を付けると 18px になる。出典のような密なリストは `src` 単独で使う。
+- **`split`（右の青グラデパネル）は本文幅を半分に食う**。項目数の多いスライドに付けると、はみ出して下が見えなくなる。Marp は**はみ出しを警告しない**ので、スライドを足したら PNG で確認する。
 
 ## テーマ（`themes/singularity.css`）
 
