@@ -80,6 +80,40 @@ table td{ color:var(--body) !important; }
 table th{ background:var(--navy) !important; color:#fff !important; font-weight:700; border-color:var(--navy); }
 table td strong{ color:var(--navy) !important; }
 
+/* ---------- CODE ----------
+   default テーマ（GitHub-markdown 由来）の pre/code は詳細度・色が強いので !important で上書きする。
+   インラインコード＝コマンド名やキー操作、pre＝参加者がそのまま打つコマンド、という使い分け。 */
+code{
+  font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  font-size:.86em;
+  background:var(--panel) !important;
+  color:var(--navy) !important;
+  border:1px solid var(--line);
+  border-radius:5px;
+  padding:2px 7px;
+}
+pre{
+  background:#10283d !important;
+  border:none !important;
+  border-radius:10px;
+  padding:16px 22px !important;
+  margin:16px 0;
+  line-height:1.6;
+  overflow:hidden;
+}
+pre code{
+  background:transparent !important;
+  border:none;
+  border-radius:0;
+  padding:0;
+  color:#e9f2f9 !important;
+  font-size:21px;
+}
+/* ハンズオンの手順スライドは行数が多い。pre・引用を詰めたいスライドに付ける */
+section.dense pre{ padding:12px 18px !important; margin:10px 0; }
+section.dense pre code{ font-size:19px; }
+section.dense blockquote{ font-size:21px; line-height:1.45; padding:14px 20px; margin:14px 0; }
+
 header{
   color:var(--muted);
   font-family:var(--num);
@@ -214,6 +248,10 @@ section.src h2{ font-size:29px; }
 section.src li{ color:var(--body); margin:7px 0; line-height:1.5; }
 section.src strong{ color:var(--navy); }
 section.src a{ color:var(--blue); word-break:break-all; }
+/* table{font-size:20px} は section.src{font-size:15px} の継承に勝ってしまうので明示的に落とす */
+section.src table{ font-size:15px; margin:14px 0; }
+section.src table th,section.src table td{ padding:8px 12px; }
+section.src code{ font-size:.92em; padding:1px 5px; }
 
 /* ---------- REFS ---------- */
 section.refs{ font-size:18px; }
