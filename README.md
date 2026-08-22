@@ -20,12 +20,14 @@ tech-share/
 │   └── presentation-plan.md
 ├── .marprc.yml               # Marp CLI 設定（テーマ自動登録）
 ├── .vscode/settings.json     # VS Code / Cursor 拡張向け設定
+├── .gitignore                # build/ と -o 付け忘れの保険
+├── CLAUDE.md                 # Claude Code 向けのリポジトリ案内
 └── README.md
 ```
 
 - **`decks/`** … Marp デッキ。front matter に `theme: singularity` を書くだけでデザインが適用される。**企画 Issue の URL を冒頭のコメントに記載**し、発表者ノートも含めてデッキ側で自己完結させる。
 - **`build/`** … 書き出し先。`-o` で明示的にここへ出す。中身はいつでも捨てて再生成できる。
-- **`themes/singularity.css`** … 全デッキ共通のデザイン。社内フォーマットを CSS で再現し、ロゴ・表紙背景をデータ URI で内包した**自己完結テーマ**。デザイン変更はこのファイルを編集する（→[共有テーマ](#共有テーマ-themessingularitycss)）。
+- **`themes/singularity.css`** … 全デッキ共通のデザイン。社内フォーマットを CSS で再現し、ロゴ・表紙背景をデータ URI で内包した**自己完結テーマ**。デザイン変更はこのファイルを編集する（→[共有テーマ](#共有テーマthemessingularitycss)）。
 - **`docs/`** … **リポジトリの手順書置き場**。発表ごとの企画書はここには置かない（→[企画は Issue で行う](#企画は-issue-で行う)）。
 - **`assets/`** … テーマに埋め込んだ画像の元データ。テーマがデータ URI で内包しているため、レンダリング時には参照されない（保管用）。
 - **`.github/ISSUE_TEMPLATE/presentation-plan.md`** … 企画 Issue のテンプレート（狙い・タイムテーブル・各パート・スライド構成表・Marp 実装メモ）。
@@ -47,7 +49,7 @@ decks/20260101_example.md
 
 1. **起票**：Issue を新規作成し、テンプレート「**発表企画**」を選ぶ。`企画` ラベルが自動で付きます。
 2. **推敲**：コメントで議論し、合意した内容は Issue 本文に反映していく。
-3. **デッキ作成**：`decks/YYYYMMDD_<topic>.md` を作る。**デッキ冒頭のコメントに企画 Issue の URL を書く**。
+3. **デッキ作成**：`decks/YYYYMMDD_<topic>.md` を作る。**デッキ冒頭のコメントに企画 Issue の URL を書き**、Issue 本文の「デッキ」欄にもパスを書き戻す。
 4. **転記**：企画の「話すポイント」は各スライド末尾の発表者ノート（HTML コメント）に転記する。
    Issue は後から編集でき git 履歴にも残らないため、**企画の最終形はデッキ側に反映しきり、デッキを自己完結させます**。
 5. **クローズ**：デッキ完成時のコミット / PR に `Closes #N` を書いて企画 Issue を閉じる。
@@ -67,7 +69,7 @@ decks/20260101_example.md
 ### A. ブラウザにライブリロード（ターミナル完結・おすすめ）
 
 ```bash
-cd articles/slides/tech-share
+cd /path/to/tech-share   # リポジトリ直下で実行する
 export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 npx @marp-team/marp-cli -s decks
 ```
@@ -100,7 +102,7 @@ npx @marp-team/marp-cli -w -p "decks/$DECK.md" </dev/null
 デッキは `decks/` にあるのでパスを付け、書き出し先は `-o` で `build/` を指定します。
 
 ```bash
-cd articles/slides/tech-share
+cd /path/to/tech-share   # リポジトリ直下で実行する
 export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 DECK=YYYYMMDD_topic   # ← 対象デッキの basename（decks/$DECK.md）
@@ -172,8 +174,12 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
   | `grid` | 2×2 のカードグリッド |
   | `ba` | ビフォー / アフター表 |
   | `center` | 引用を中央に据える |
-  | `refs` | 参考・注記 |
+  | `refs` | 参考・注記（18px） |
+  | `src` | 出典など密なリスト（15px） |
+  | `dense` | 手順スライド用（`pre` と引用を詰めて行数を稼ぐ） |
   | `split` | 右側に青グラデパネル（PDF 3枚目） |
+
+  > `refs` と `src` は font-size が衝突します（両方付けると 18px になる）。出典スライドは **`src` 単独**で使ってください。
 
 - **図版は生レイアウト `<div>` を使わず**、Markdown ネイティブ要素（`<ol>` / `<ul>` / `<table>`）に CSS を当てて表現しています。これにより HTML 設定に依存せず描画されます。
 - **パートのラベル**は `<!-- _header: 'PART 0X · ...' -->`、**発表者ノート**は各スライド末尾の `<!-- ... -->` コメントに記載しています。

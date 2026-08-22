@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 1. **企画 Issue を読む**：GitHub MCP の `issue_read`（`method: "get"`／議論は `get_comments`）で本文とコメントを取得する。どの Issue か分からない場合は `list_issues` を `labels: ["企画"]` で絞る。**Issue 本文が正、コメントは経緯**として扱い、食い違ったら本文の最新版に従う。
 2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。
-3. **紐付ける**：表紙スライドのコメントの先頭に `企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/N` を書く。
+3. **紐付ける**：表紙スライドのコメントの先頭に `企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/N` を書き、Issue 本文の「デッキ」欄にもデッキのパスを書き戻す。
 4. **転記する**：企画の「話すポイント」「補足メモ」を各スライド末尾の発表者ノート（HTML コメント）に落とす。**Issue を参照しないと分からない状態にしない**。
 5. **確認する**：PNG 書き出しで全スライドのはみ出しを目視確認する（下記「コマンド」）。
 6. **閉じる**：コミット / PR 本文に `Closes #N` を書いて企画 Issue をクローズする。
