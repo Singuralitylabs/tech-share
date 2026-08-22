@@ -100,7 +100,7 @@ assignees: ''
 ## Marp 実装メモ
 
 - **図版が要るスライド**：
-- **使うレイアウトクラス**（`<!-- _class: ... -->`）：`lead` / `stat` / `trend` / `flow` / `grid` / `ba` / `center` / `refs` / `dense` / `split`
+- **使うレイアウトクラス**（`<!-- _class: ... -->`）：`lead` / `stat` / `trend` / `flow` / `grid` / `ba` / `center` / `refs` / `src` / `dense` / `split`
 - **出典注記**：数値の出典・測定基準をどのスライド（または参考スライド）に置くか。出典スライドは `src` 単独で組む（`refs` と併用すると font-size が衝突して 18px になる）
 - **注意点**：はみ出し確認（PNG 書き出し）、`split` の併用可否、日本語の太字が効かないパターンなど
 
