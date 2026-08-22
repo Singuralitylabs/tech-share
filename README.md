@@ -1,42 +1,58 @@
 # tech-share スライド
 
 社内向け Tech Share 用のプレゼン資料を **Marp（Markdown → スライド）** で管理するリポジトリです。
-`docs/` の企画書をもとに、`decks/` に Marp 形式の `.md` デッキを作成します。
+発表の**企画は GitHub Issue** で行い、合意できた企画をもとに `decks/` に Marp 形式の `.md` デッキを作成します。
 
 ## ディレクトリ構成
 
 ```
 tech-share/
-├── docs/                     # 企画書（プレゼンの骨子・台本）
-│   └── YYYYMMDD_*.md
-├── decks/                    # Marp デッキ本体（docs/ と同じ basename）
+├── decks/                    # Marp デッキ本体（成果物）
 │   └── YYYYMMDD_*.md
 ├── build/                    # 書き出した生成物（再生成可能・git 管理外）
 │   └── YYYYMMDD_*.html / .pdf / .pptx
 ├── themes/                   # 共有 Marp テーマ（デザインの実体）
 │   └── singularity.css       # 社内フォーマットを再現した自己完結テーマ
+├── docs/                     # リポジトリの手順書・ドキュメント
+│   └── google-slides.md      # Google スライド出力（k1LoW/deck）の手順
 ├── assets/                   # テーマ画像の元データ（logo.png / title-bg.png）
+├── .github/ISSUE_TEMPLATE/   # 企画 Issue のテンプレート
+│   └── presentation-plan.md
 ├── .marprc.yml               # Marp CLI 設定（テーマ自動登録）
 ├── .vscode/settings.json     # VS Code / Cursor 拡張向け設定
 └── README.md
 ```
 
-- **`docs/`** … 企画書。タイムテーブル、各スライドの中身、「ひとことスライド文言案」などを記載。
-- **`decks/`** … Marp デッキ。front matter に `theme: singularity` を書くだけでデザインが適用される。対応する企画書と同じファイル名にする運用。
+- **`decks/`** … Marp デッキ。front matter に `theme: singularity` を書くだけでデザインが適用される。**企画 Issue の URL を冒頭のコメントに記載**し、発表者ノートも含めてデッキ側で自己完結させる。
 - **`build/`** … 書き出し先。`-o` で明示的にここへ出す。中身はいつでも捨てて再生成できる。
 - **`themes/singularity.css`** … 全デッキ共通のデザイン。社内フォーマットを CSS で再現し、ロゴ・表紙背景をデータ URI で内包した**自己完結テーマ**。デザイン変更はこのファイルを編集する（→[共有テーマ](#共有テーマ-themessingularitycss)）。
+- **`docs/`** … **リポジトリの手順書置き場**。発表ごとの企画書はここには置かない（→[企画は Issue で行う](#企画は-issue-で行う)）。
 - **`assets/`** … テーマに埋め込んだ画像の元データ。テーマがデータ URI で内包しているため、レンダリング時には参照されない（保管用）。
+- **`.github/ISSUE_TEMPLATE/presentation-plan.md`** … 企画 Issue のテンプレート（狙い・タイムテーブル・各パート・スライド構成表・Marp 実装メモ）。
 
 ### 命名規則
 
-デッキと企画書は **`YYYYMMDD_<topic>.md`** で揃えます（`YYYYMMDD` は発表日）。両者が同じ basename を持つことで、
-`docs/` と `decks/` の対応が一目で分かります。収録済みのデッキは `decks/` を直接見てください。
+デッキは **`YYYYMMDD_<topic>.md`** で作ります（`YYYYMMDD` は発表日）。収録済みのデッキは `decks/` を直接見てください。
 
 ```
-docs/20260101_example.md   ←→   decks/20260101_example.md
+decks/20260101_example.md
 ```
 
 以降のコマンド例では、対象デッキの basename を `DECK` に入れて使います。
+
+## 企画は Issue で行う
+
+発表の企画（テーマ出し → 構成検討 → 推敲）は、リポジトリにファイルをコミットするのではなく **GitHub Issue** 上で行います。
+反復して直す作業はコメントと本文編集の方が向いているためです。
+
+1. **起票**：Issue を新規作成し、テンプレート「**発表企画**」を選ぶ。`企画` ラベルが自動で付きます。
+2. **推敲**：コメントで議論し、合意した内容は Issue 本文に反映していく。
+3. **デッキ作成**：`decks/YYYYMMDD_<topic>.md` を作る。**デッキ冒頭のコメントに企画 Issue の URL を書く**。
+4. **転記**：企画の「話すポイント」は各スライド末尾の発表者ノート（HTML コメント）に転記する。
+   Issue は後から編集でき git 履歴にも残らないため、**企画の最終形はデッキ側に反映しきり、デッキを自己完結させます**。
+5. **クローズ**：デッキ完成時のコミット / PR に `Closes #N` を書いて企画 Issue を閉じる。
+
+過去（`docs/` 運用時代）の企画書は Issue に移設済みです。原文は git 履歴からも取り出せます。
 
 ## 必要環境
 
@@ -124,10 +140,12 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
 
 ## 新しいデッキを作るには
 
-1. `docs/` に企画書 `YYYYMMDD_*.md` を用意する。
-2. `decks/` に **同じ basename** の Marp デッキ `.md` を作成し、front matter に `theme: singularity` を書く。
-3. 企画書の「ひとことスライド文言案」を見出しに、要点は 3〜4 項目に圧縮する（1 枚 1 メッセージ）。
-4. レイアウトは各スライドの `<!-- _class: ... -->` で切り替える（下記クラス一覧）。
+1. 企画 Issue を起票して内容を固める（→[企画は Issue で行う](#企画は-issue-で行う)）。
+2. `decks/YYYYMMDD_<topic>.md` を作成し、front matter に `theme: singularity` を書く。
+3. **表紙スライドのコメントに企画 Issue の URL を記載する**（デッキから企画へ辿れるようにする）。
+4. 企画の「ひとことスライド文言案」を見出しに、要点は 3〜4 項目に圧縮する（1 枚 1 メッセージ）。
+5. レイアウトは各スライドの `<!-- _class: ... -->` で切り替える（下記クラス一覧）。
+6. 企画の「話すポイント」を各スライド末尾の発表者ノートに転記し、コミット / PR に `Closes #N` を書く。
 
 スライド作成には Claude Code のスキル **`marp-slide`**（softaworks/agent-toolkit）を利用できますが、
 デザインは常に共有テーマ `themes/singularity.css` 側で管理します（デッキにインライン `<style>` は書かない）。
@@ -171,8 +189,8 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
 
 ## 補足：バージョン管理
 
-生成物は `build/` にまとめ、`.gitignore` で除外しています。`docs/` `decks/` `themes/` `assets/`
-`.marprc.yml` `.vscode/` はソースなので追跡します。
+生成物は `build/` にまとめ、`.gitignore` で除外しています。`decks/` `themes/` `docs/` `assets/`
+`.marprc.yml` `.vscode/` `.github/` はソースなので追跡します。
 
 `.gitignore` は `build/` に加えて、`-o` の付け忘れで生成物が `decks/` に落ちた場合の保険も持っています。
 確認用の PNG はリポジトリ内に出さず、`/tmp` などへ書き出してください。

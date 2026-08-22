@@ -21,6 +21,7 @@ footer: 'AI駆動開発の流れとClaude Codeの基本操作 ｜ シンギュ�
 <p class="org">シンギュラリティ・ラボ</p>
 
 <!--
+企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/5
 狙い：Claude Code に実際に触れて「伝える→作る→見る→直す」のリズムを持ち帰ってもらう。
 対象：エンジニア〜非エンジニア混在。ターミナル未経験者がいる前提。
 開始15分前から接続を開放し、`claude` が起動するかだけ確認してもらう。
