@@ -6,20 +6,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 社内「Tech Share」向けプレゼンを **Marp**（Markdown → スライド）で管理するコンテンツリポジトリ。ビルドシステム・package.json・lint・テストは存在しない。「ソース」は Markdown、「ビルド」は Marp のレンダリング。Marp CLI はローカルに導入せず、`npx` で都度実行する。
 
+発表の**企画は GitHub Issue** で行う（`企画` ラベル ＋ `.github/ISSUE_TEMPLATE/presentation-plan.md`）。企画書をファイルとしてコミットする運用は廃止した。
+
 ## リポジトリの構成モデル
 
-- `docs/YYYYMMDD_*.md` — **企画書**（骨子・台本）。タイムテーブル、各スライドの中身、見出しにそのまま使う「ひとことスライド文言案」を含む。
-- `decks/YYYYMMDD_*.md` — **Marp デッキ**。対応する企画書と同じ basename を持つ。これが成果物。デッキ自身はスタイルを持たず、front matter で `theme: singularity` を指定するだけ。
+- **企画 Issue**（`企画` ラベル）— **企画書に相当するもの**。タイムテーブル、各スライドの中身、見出しにそのまま使う「ひとことスライド文言案」、Marp 実装メモを含む。**リポジトリ内にファイルとしては存在しない**ので、GitHub MCP（`issue_read` / `list_issues` with `labels: ["企画"]`）で読み取る。テンプレートは `.github/ISSUE_TEMPLATE/presentation-plan.md`。
+- `decks/YYYYMMDD_*.md` — **Marp デッキ**。これが成果物。**表紙スライドのコメントに企画 Issue の URL** を記載し、企画の最終形（話すポイント＝発表者ノート）はデッキ側に反映しきる（Issue は後から編集でき git 履歴に残らないため、デッキを自己完結させる）。デッキ自身はスタイルを持たず、front matter で `theme: singularity` を指定するだけ。
 - `decks/YYYYMMDD_*.gslides.md` — **[k1LoW/deck](https://github.com/k1LoW/deck) 用デッキ**（Google スライド出力）。Marp 版とは**別物**なので混同しないこと。記法が違い（`_class` や `theme` は無く、レイアウトは `<!-- {"layout": "..."} -->`）、`themes/singularity.css` も効かない。デザインは Google スライド側のテーマ／レイアウトマスターが持つ。セットアップと運用は `docs/google-slides.md` を参照。**`deck apply` は Markdown に無いスライドを削除する**ので、Slides 側にだけ足したページは消える（詳細は手順書参照）。
 - `build/` — **生成物の置き場**。`-o` で明示的にここへ書き出す。git 管理外。
+- `docs/` — **リポジトリの手順書置き場**（`google-slides.md` など）。発表ごとの企画書はここには置かない。
 - `themes/singularity.css` — **共有 Marp テーマ**。全デッキのデザイン（配色・レイアウトクラス・ロゴ・表紙背景）はここに集約されている。詳細は下記「テーマ」。
 - `.marprc.yml` — Marp CLI 設定。`themeSet: ["./themes"]` によりテーマを自動登録し、`theme: singularity` を解決する。`allowLocalFiles: true` も設定済み。**`inputDir` は意図的に設定していない**（理由は下記「ハマりどころ」）。
 - `.vscode/settings.json` — VS Code / Cursor の Marp 拡張向け。テーマ登録（`markdown.marp.themes`）と `markdown.marp.html: true`（インライン HTML 有効化）。
 - `assets/` — テーマ画像の元データ（`logo.png`, `title-bg.png`）。**テーマにはデータ URI として埋め込み済み**のため、レンダリング時に参照されるわけではない（元素材の保管）。
 
-デザインの元になった社内フォーマット（`スライドフォーマット.pdf`）は、`themes/singularity.css` への取り込みが完了したため削除済み。必要になったら Git 履歴（初回コミット）から取り出せる。
+デザインの元になった社内フォーマット（`スライドフォーマット.pdf`）は、`themes/singularity.css` への取り込みが完了したため削除済み。必要になったら Git 履歴（初回コミット）から取り出せる。旧運用の `docs/YYYYMMDD_*.md`（企画書）も Issue へ移設のうえ削除済みで、原文は Git 履歴から取り出せる。
 
-新しいデッキを作るとき：`docs/` に企画書を追加 → 同じ basename の `.md` を `decks/` に作成 → front matter に `theme: singularity` と書き、レイアウトは `_class` で指定する（インライン `<style>` は不要）。
+## 企画 Issue からデッキを作る流れ
+
+1. **企画 Issue を読む**：GitHub MCP の `issue_read`（`method: "get"`／議論は `get_comments`）で本文とコメントを取得する。どの Issue か分からない場合は `list_issues` を `labels: ["企画"]` で絞る。**Issue 本文が正、コメントは経緯**として扱い、食い違ったら本文の最新版に従う。
+2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。
+3. **紐付ける**：表紙スライドのコメントの先頭に `企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/N` を書き、Issue 本文の「デッキ」欄にもデッキのパスを書き戻す。
+4. **転記する**：企画の「話すポイント」「補足メモ」を各スライド末尾の発表者ノート（HTML コメント）に落とす。**Issue を参照しないと分からない状態にしない**。
+5. **確認する**：PNG 書き出しで全スライドのはみ出しを目視確認する（下記「コマンド」）。
+6. **閉じる**：コミット / PR 本文に `Closes #N` を書いて企画 Issue をクローズする。
 
 ## コマンド
 
@@ -72,6 +82,7 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 ## スライド作成の規約
 
 - front matter に `theme: singularity`。
-- 企画書の一言見出しを `##` の見出しに使い、各スライドは要点 3〜4 項目に圧縮、1 枚 1 メッセージ。
-- パートの見出しは `<!-- _header: 'PART 0X · ラベル' -->`、発表者ノート（企画書の話すポイント）は各スライド末尾の `<!-- ... -->` コメントに置く。
+- **表紙スライドのコメント先頭に企画 Issue の URL** を書く（デッキ → 企画の導線）。
+- 企画 Issue の「ひとことスライド文言案」を `##` の見出しに使い、各スライドは要点 3〜4 項目に圧縮、1 枚 1 メッセージ。
+- パートの見出しは `<!-- _header: 'PART 0X · ラベル' -->`、発表者ノート（企画 Issue の話すポイント）は各スライド末尾の `<!-- ... -->` コメントに置く。
 - `marp-slide` スキル（softaworks/agent-toolkit）は導入済みだが、雛形生成の補助であり、デザインは常に共有テーマ側で管理する。
