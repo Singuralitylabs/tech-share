@@ -52,7 +52,8 @@ decks/20260101_example.md
    Issue は後から編集でき git 履歴にも残らないため、**企画の最終形はデッキ側に反映しきり、デッキを自己完結させます**。
 5. **クローズ**：デッキ完成時のコミット / PR に `Closes #N` を書いて企画 Issue を閉じる。
 
-過去（`docs/` 運用時代）の企画書は Issue に移設済みです。原文は git 履歴からも取り出せます。
+過去（`docs/` 運用時代）の企画書は Issue に移設済みです（[#4 生成AIトレンド](https://github.com/Singuralitylabs/tech-share/issues/4) /
+[#5 Claude Code 基礎講座](https://github.com/Singuralitylabs/tech-share/issues/5)）。原文は git 履歴からも取り出せます。
 
 ## 必要環境
 
