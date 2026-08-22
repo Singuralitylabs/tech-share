@@ -99,7 +99,7 @@ pre{
   padding:16px 22px !important;
   margin:16px 0;
   line-height:1.6;
-  overflow:hidden;
+  overflow:auto;
 }
 pre code{
   background:transparent !important;
