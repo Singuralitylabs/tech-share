@@ -28,6 +28,7 @@ go install github.com/k1LoW/deck/cmd/deck@latest
 `go install` の出力先（`$(go env GOPATH)/bin`）は PATH に入っていないことが多い。通っているディレクトリにリンクを張るのが簡単。
 
 ```
+mkdir -p ~/.local/bin
 ln -sf "$(go env GOPATH)/bin/deck" ~/.local/bin/deck
 ```
 
