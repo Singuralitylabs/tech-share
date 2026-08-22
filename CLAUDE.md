@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `docs/YYYYMMDD_*.md` — **企画書**（骨子・台本）。タイムテーブル、各スライドの中身、見出しにそのまま使う「ひとことスライド文言案」を含む。
 - `decks/YYYYMMDD_*.md` — **Marp デッキ**。対応する企画書と同じ basename を持つ。これが成果物。デッキ自身はスタイルを持たず、front matter で `theme: singularity` を指定するだけ。
-- `decks/YYYYMMDD_*.gslides.md` — **[k1LoW/deck](https://github.com/k1LoW/deck) 用デッキ**（Google スライド出力）。Marp 版とは**別物**なので混同しないこと。記法が違い（`_class` や `theme` は無く、レイアウトは `<!-- {"layout": "..."} -->`）、`themes/singularity.css` も効かない。デザインは Google スライド側のテーマ／レイアウトマスターが持つ。セットアップと運用は `docs/YYYYMMDD_gslides-setup.md` を参照。**`deck apply` は Markdown に無いスライドを削除する**ので、Slides 側にだけ足したページは消える（詳細はセットアップメモ）。
+- `decks/YYYYMMDD_*.gslides.md` — **[k1LoW/deck](https://github.com/k1LoW/deck) 用デッキ**（Google スライド出力）。Marp 版とは**別物**なので混同しないこと。記法が違い（`_class` や `theme` は無く、レイアウトは `<!-- {"layout": "..."} -->`）、`themes/singularity.css` も効かない。デザインは Google スライド側のテーマ／レイアウトマスターが持つ。セットアップと運用は `docs/google-slides.md` を参照。**`deck apply` は Markdown に無いスライドを削除する**ので、Slides 側にだけ足したページは消える（詳細は手順書参照）。
 - `build/` — **生成物の置き場**。`-o` で明示的にここへ書き出す。git 管理外。
 - `themes/singularity.css` — **共有 Marp テーマ**。全デッキのデザイン（配色・レイアウトクラス・ロゴ・表紙背景）はここに集約されている。詳細は下記「テーマ」。
 - `.marprc.yml` — Marp CLI 設定。`themeSet: ["./themes"]` によりテーマを自動登録し、`theme: singularity` を解決する。`allowLocalFiles: true` も設定済み。**`inputDir` は意図的に設定していない**（理由は下記「ハマりどころ」）。
