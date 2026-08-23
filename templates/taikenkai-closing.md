@@ -192,9 +192,9 @@ Web技術講座の解説画面
 - 課題提出による実践力強化
 - 提出課題のAIレビュー
 
-| 紹介記事 | デモサイト |
+| デモサイト | 紹介記事 |
 |:---:|:---:|
-| ![w:110](../assets/taikenkai/qr-study-article.png) | ![w:110](../assets/taikenkai/qr-study-demo.png) |
+| ![w:110](../assets/taikenkai/qr-study-demo.png) | ![w:110](../assets/taikenkai/qr-study-article.png) |
 
 <p class="fig">
 <img src="../assets/taikenkai/screenshot-study-phases.jpeg" alt="フェーズ別画面" width="300">
@@ -204,9 +204,9 @@ AIレビュー画面
 </p>
 
 <!--
-紹介記事：https://note.com/hello_coding/n/n48ed56a1bd3c
 デモサイト：https://web-skillup-service.vercel.app/demo
-QRの取り違えに注意（左＝紹介記事 / 右＝デモサイト）。
+紹介記事：https://note.com/hello_coding/n/n48ed56a1bd3c
+QRの取り違えに注意（左＝デモサイト / 右＝紹介記事。元PDFの配置）。
 -->
 
 ---
