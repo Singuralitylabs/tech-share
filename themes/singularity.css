@@ -269,3 +269,26 @@ section.split{
 }
 section.split::after{ color:rgba(255,255,255,.92) !important; }
 section.split.refs li{ font-size:16px; }
+
+/* ---------- IMAGES ----------
+   体験会定型スライド（templates/taikenkai-*.md）が assets/taikenkai/ の
+   QR・写真・スクリーンショットを参照する。はみ出し防止の上限だけテーマ側で持つ。 */
+img{ max-width:100%; height:auto; }
+section.center img{ display:block; margin:16px auto 0; }
+
+/* ---------- PAIR (本文 + 右の図/QR) ----------
+   split と同じ「右を空けて本文を左に残す」型。右はグラデではなく .fig の画像。
+   複数クラスは `_class: pair` / `_class: pair wide`。 */
+section.pair{ padding-right:320px; }
+section.pair .fig{
+  position:absolute;
+  right:56px; top:140px; bottom:56px;
+  width:240px;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center;
+  font-size:15px; font-weight:700; color:var(--muted); line-height:1.45;
+  gap:10px;
+}
+section.pair .fig img{ display:block; margin:0 auto; max-height:42%; max-width:100%; }
+section.pair.wide{ padding-right:calc(42% + 80px); }
+section.pair.wide .fig{ width:42%; }

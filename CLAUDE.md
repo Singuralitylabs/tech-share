@@ -19,14 +19,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `themes/singularity.css` — **共有 Marp テーマ**。全デッキのデザイン（配色・レイアウトクラス・ロゴ・表紙背景）はここに集約されている。詳細は下記「テーマ」。
 - `.marprc.yml` — Marp CLI 設定。`themeSet: ["./themes"]` によりテーマを自動登録し、`theme: singularity` を解決する。`allowLocalFiles: true` も設定済み。**`inputDir` は意図的に設定していない**（理由は下記「ハマりどころ」）。
 - `.vscode/settings.json` — VS Code / Cursor の Marp 拡張向け。テーマ登録（`markdown.marp.themes`）と `markdown.marp.html: true`（インライン HTML 有効化）。
-- `assets/` — テーマ画像の元データ（`logo.png`, `title-bg.png`）。**テーマにはデータ URI として埋め込み済み**のため、レンダリング時に参照されるわけではない（元素材の保管）。
+- `assets/` — テーマ画像の元データ（`logo.png`, `title-bg.png`。テーマにはデータ URI 埋め込み済みで、レンダリング時には参照されない）と、体験会定型スライドの図（`assets/taikenkai/`。QR・写真・スクリーンショット。`templates/` から相対パスで参照する）。
 
 デザインの元になった社内フォーマット（`スライドフォーマット.pdf`）は、`themes/singularity.css` への取り込みが完了したため削除済み。必要になったら Git 履歴（初回コミット）から取り出せる。旧運用の `docs/YYYYMMDD_*.md`（企画書）も Issue へ移設のうえ削除済みで、原文は Git 履歴から取り出せる。
 
 ## 企画 Issue からデッキを作る流れ
 
 1. **企画 Issue を読む**：GitHub MCP の `issue_read`（`method: "get"`／議論は `get_comments`）で本文とコメントを取得する。どの Issue か分からない場合は `list_issues` を `labels: ["企画"]` で絞る。**Issue 本文が正、コメントは経緯**として扱い、食い違ったら本文の最新版に従う。このとき **Issue のラベルを必ず確認**し、`体験会` ラベルが付いていたら下記「体験会デッキの必須スライド」を適用する。
-2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。企画 Issue が `体験会` ラベル付きなら、`templates/taikenkai-opening.md` の定型スライド群を**表紙（`_class: lead`）スライドの前**（front matter の直後）に、`templates/taikenkai-closing.md` の定型スライド群を**デッキの最後**に転記する（詳細・注意点は下記「体験会デッキの必須スライド」）。**`templates/` の中身が仮置き（プレースホルダ）のままなら転記せず**、Issue #7 の進捗を確認する。
+2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。企画 Issue が `体験会` ラベル付きなら、`templates/taikenkai-opening.md` の定型スライド群を**表紙（`_class: lead`）スライドの前**（front matter の直後）に、`templates/taikenkai-closing.md` の定型スライド群を**デッキの最後**に転記する（詳細・注意点は下記「体験会デッキの必須スライド」）。
 3. **紐付ける**：表紙スライドのコメントの先頭に `企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/N` を書き、Issue 本文の「デッキ」欄にもデッキのパスを書き戻す。
 4. **転記する**：企画の「話すポイント」「補足メモ」を各スライド末尾の発表者ノート（HTML コメント）に落とす。**Issue を参照しないと分からない状態にしない**。
 5. **確認する**：PNG 書き出しで全スライドのはみ出しを目視確認する（下記「コマンド」）。
@@ -36,16 +36,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 体験会イベント向けの発表は、**企画 Issue に `体験会` ラベルを付けて識別**する（`list_issues` なら `labels: ["企画", "体験会"]` で絞れる）。`体験会` ラベル付きの企画から作るデッキには、以下の定型スライドを**必ず**入れる。
 
-> ⚠️ **`templates/taikenkai-*.md` は現在プレースホルダ**（実内容の反映は Issue #7）。プレースホルダのまま本番デッキに転記してはいけない。`体験会` ラベル付きの企画に着手する際は、まず Issue #7 が完了しているか確認する。
-
 - **`templates/taikenkai-opening.md`** の `_paginate: skip` 行から始まる全スライド → **表紙（`_class: lead`）スライドの前**（front matter の直後）。
 - **`templates/taikenkai-closing.md`** の `_paginate: skip` 行から始まる全スライド → **デッキの最後**（APPENDIX・参考スライドも含めた全スライドの後）。
 
 転記時の注意点（両ファイル共通、テンプレート冒頭のガイドコメントにも同じ内容あり）：
 
 - **全枚・順序どおり・文言を改変せず**転記する（省略・並べ替え・要約は禁止）。ただし **front matter とガイドコメント自体（このコメントブロックの説明文）は転記対象外**。Marp は各スライド先頭の HTML コメントを発表者ノートとして扱うため、ガイドコメントを転記するとデッキの発表者ノートに混入する。
+- **差し替え欄だけは転記時に最新化する**（この2箇所が、定型スライドで文言を改変してよい唯一の例外）。見出し・箇条書きの型は残す。
+  1. `taikenkai-closing.md` の「今後のイベントのお知らせ」— 開催日程の中身（3件を目安）
+  2. `taikenkai-closing.md` の「○月の主なシンラボ活動の紹介」— 見出しの月と箇条書きの中身
 - 転記の**継ぎ目に `---`（スライド区切り）を入れる**。入れないと、冒頭定型は表紙スライドと、末尾定型はデッキの最終スライドと1枚に合体してしまう（Marp ははみ出し同様これを警告しない）。
 - 各スライド先頭の `<!-- _paginate: skip -->` `<!-- _footer: '' -->` もスライドごとに転記する（ページ番号・フッターが定型スライドに出ないようにするため）。この2つは**そのスライド1枚にしか効かないスポットディレクティブ**なので、複数枚あるスライドの2枚目以降にも書き漏らさないこと。**`_paginate: false` ではなく `_paginate: skip` を使う**：`false` は番号を非表示にするだけで本編のページカウントには含まれてしまい、本編スライドの番号が定型スライドの枚数分ずれる。
+- 画像パス `../assets/taikenkai/` は `templates/` からも `decks/` からも同じ相対位置なので、転記時に書き換えない。QR や写真を差し替えるときは `assets/taikenkai/` のファイルを置き換える。
 - テンプレート側の front matter（`theme: singularity` など）は各ファイル単体のプレビュー用なので転記しない。
 
 定型スライドの内容を変えたいときはデッキ側ではなく `templates/` のファイルを直す（次回以降のデッキに反映される。転記済みデッキには自動反映されない点に注意）。
@@ -74,8 +76,8 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 ### 非自明なポイント（ハマりどころ）
 
 - **`--no-stdin` と `</dev/null` は必須**。非対話シェルでは、これらが無いと marp-cli が標準入力待ちでブロックし、止まって見える（"Currently waiting data from stdin stream"）。
-- **`--allow-local-files` は不要**。テーマのロゴ・表紙背景はデータ URI 埋め込みで、デッキはローカル画像を参照しない。将来デッキにローカル画像（スクショ等）を足す場合に備え、`.marprc.yml` に `allowLocalFiles: true` を入れてあるので、その場合もフラグは要らない。
-- **VS Code / Cursor の Marp 拡張**は `.vscode/settings.json` でテーマ登録と `markdown.marp.html: true` を済ませてある。デッキはインライン HTML（`<br>`, `<p class="kicker">`）を使うため html 有効化が必要。
+- **`--allow-local-files` は不要**。テーマのロゴ・表紙背景はデータ URI 埋め込み。体験会定型スライドは `assets/taikenkai/` のローカル画像を参照するが、`.marprc.yml` に `allowLocalFiles: true` を入れてあるので追加フラグは要らない。
+- **VS Code / Cursor の Marp 拡張**は `.vscode/settings.json` でテーマ登録と `markdown.marp.html: true` を済ませてある。デッキはインライン HTML（`<br>`, `<p class="kicker">`、`pair` の `<p class="fig">`）を使うため html 有効化が必要。
 - **日本語で `**太字**` が効かないパターンがある**。閉じる `**` の**直前が `"` や `」` などの約物で、直後が文字**だと、Markdown が閉じ記号と認識せず `**` がそのまま画面に出る（例：`**AIと"作る"**ための` は失敗）。太字の範囲を語尾まで広げて `**AIと"作る"ための道具**` にすれば直る。閉じ `**` の直後が句読点なら問題ない。デッキを書いたら `grep -nE '["」』）]\*\*[^ 　]' decks/<deck>.md` で洗い出す。
 - **`pre`（コードブロック）は「そのまま打ち込むコマンド」専用**。テーマの `pre` は濃紺地のターミナル風なので、キー操作（`Shift + Tab` など）をここに入れると**打ち込むものと誤解される**。キー操作は引用（`>`）＋インラインコードで書く。
 - **`.marprc.yml` に `inputDir` を足さないこと**。`decks/` → `build/` を自動で対応付けられて一見便利だが、設定した瞬間にファイル名を渡すコマンドが全部 `[ERROR] Cannot pass files together with input directory.` で落ちる。1枚だけ PNG に書き出して見た目を確認する手段が失われるので、パスと `-o` を都度明示する方を選んでいる。
@@ -90,10 +92,10 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 - 先頭は `/* @theme singularity */` ＋ `@import 'default';`。**default テーマを継承**しているので、ページ番号などの基本挙動と、default（GitHub-markdown）由来の高詳細度な表・引用 CSS の両方が入る。後者に勝つため、表・引用の色/背景の上書きには **`!important` が必要**（意図的）。
 - 配色：白 `#f9fafc`、濃紺→シアンのグラデ `#014e94 → #66c5d2`、太字＝濃紺。フォント：Noto Sans JP ＋ Inter。
 - **PDF の 3 レイアウトがスライドの役割に対応**：1枚目（ローポリ表紙）→ 表紙、2枚目（白＋グラデ罫線＋ロゴ）→ 本文・クロージング、3枚目（右側の青グラデパネル）→ 最後／参考スライド。
-- **レイアウトはスライドごとに `<!-- _class: ... -->` で指定**し、テーマ内の `section.<class>` で装飾する。クラス：`lead`（表紙。低ポリ背景を内包）、`stat`（大きな数字）、`trend`（シェア推移レール）、`flow`（連番ステップ図）、`grid`（2×2 カード）、`ba`（ビフォー/アフター表）、`center`（中央寄せ引用）、`refs`（参考）、`dense`（手順スライド用。`pre` と引用を詰めて行数を稼ぐ）、`split`（右グラデパネル。併用可、例：`_class: refs split`）。複数クラスは半角スペース区切り。
+- **レイアウトはスライドごとに `<!-- _class: ... -->` で指定**し、テーマ内の `section.<class>` で装飾する。クラス：`lead`（表紙。低ポリ背景を内包）、`stat`（大きな数字）、`trend`（シェア推移レール）、`flow`（連番ステップ図）、`grid`（2×2 カード）、`ba`（ビフォー/アフター表）、`center`（中央寄せ引用）、`refs`（参考）、`dense`（手順スライド用。`pre` と引用を詰めて行数を稼ぐ）、`split`（右グラデパネル。併用可、例：`_class: refs split`）、`pair`（本文＋右の図/QR。広い図は `pair wide`）。複数クラスは半角スペース区切り。
 - **コード表示**：`code`（インライン＝薄グレー地に濃紺）と `pre`（ブロック＝濃紺地に白抜き＝ターミナル風）をテーマ側で定義済み。default テーマの GitHub-markdown 由来 CSS に勝つため `!important` が必要（表・引用と同じ事情）。`pre` は「参加者がそのまま打つコマンド」に見えるので、**キー操作（`Shift + Tab` など）を `pre` で書かない**（打ち込むものと誤解される）。引用か太字で表す。
 - **`section.src` に表を置くときは注意**。`table{font-size:20px}` が `section.src{font-size:15px}` の継承に勝つため、テーマ側で `section.src table` を明示的に 15px に落としてある。同様の衝突は他のクラスでも起こりうる。
-- **図版は生レイアウト `<div>` を使わず、ネイティブ Markdown ＋ CSS で構築**：装飾した `<ol>`（flow）、`<ul>` グリッド、`<table>`。raw HTML が無効な環境でも描画される。
+- **図版は生レイアウト `<div>` を使わず、ネイティブ Markdown ＋ CSS で構築**：装飾した `<ol>`（flow）、`<ul>` グリッド、`<table>`。raw HTML が無効な環境でも描画される。**例外は `pair` の `.fig`**（`<p class="fig">` ＋ `<img>`）。QR・写真の右寄せキャプションは raw HTML が前提なので、`markdown.marp.html` が無効だと図が消える。
 - **ブランド埋め込み**：ロゴは `--logo-uri`（データ URI、`:root` で一度定義し `section` と `section.split` で再利用）。表紙背景は `section.lead` の背景にデータ URI で内包（半透明の紺ベールを重ねて白文字を可読化）。
 
 テーマを更新すると全デッキに反映される。デザインを変える場合はデッキではなくこのファイルを編集する。
