@@ -99,7 +99,7 @@ npx @marp-team/marp-cli -w -p "decks/$DECK.md" </dev/null
 「**Marp for VS Code**」拡張を入れると、エディタ横にライブプレビューが出ます
 （`.md` を開いて右上のプレビューアイコン、または `Cmd+Shift+V`）。
 
-> ⚠️ このデッキは見出しの改行や kicker などで **インライン HTML（`<br>`, `<p class="kicker">` 等）** を使用しています。
+> ⚠️ このデッキは見出しの改行や kicker、`pair` の図などで **インライン HTML（`<br>`, `<p class="kicker">`, `<p class="fig">` 等）** を使用しています。
 > 拡張は HTML が既定で無効なため、一部が崩れて見えます。設定 **`markdown.marp.html` を `true`**（または `all`）にすると
 > marp-cli の出力と一致します。marp-cli（A / B）は既定で HTML 有効のため、最終成果物と同じ見た目になります。
 
@@ -190,7 +190,7 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
 
   > `refs` と `src` は font-size が衝突します（両方付けると 18px になる）。出典スライドは **`src` 単独**で使ってください。
 
-- **図版は生レイアウト `<div>` を使わず**、Markdown ネイティブ要素（`<ol>` / `<ul>` / `<table>`）に CSS を当てて表現しています。これにより HTML 設定に依存せず描画されます。
+- **図版は生レイアウト `<div>` を使わず**、Markdown ネイティブ要素（`<ol>` / `<ul>` / `<table>`）に CSS を当てて表現しています。これにより HTML 設定に依存せず描画されます。**例外は `pair` の `.fig`**（`<p class="fig">` ＋ `<img>`）。QR・写真の右寄せは raw HTML が前提で、`markdown.marp.html` が無効だと図が消えます。
 - **パートのラベル**は `<!-- _header: 'PART 0X · ...' -->`、**発表者ノート**は各スライド末尾の `<!-- ... -->` コメントに記載しています。
 
 ### 他リポジトリ・他デッキへの再利用

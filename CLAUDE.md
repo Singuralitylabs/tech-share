@@ -77,7 +77,7 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 
 - **`--no-stdin` と `</dev/null` は必須**。非対話シェルでは、これらが無いと marp-cli が標準入力待ちでブロックし、止まって見える（"Currently waiting data from stdin stream"）。
 - **`--allow-local-files` は不要**。テーマのロゴ・表紙背景はデータ URI 埋め込み。体験会定型スライドは `assets/taikenkai/` のローカル画像を参照するが、`.marprc.yml` に `allowLocalFiles: true` を入れてあるので追加フラグは要らない。
-- **VS Code / Cursor の Marp 拡張**は `.vscode/settings.json` でテーマ登録と `markdown.marp.html: true` を済ませてある。デッキはインライン HTML（`<br>`, `<p class="kicker">`）を使うため html 有効化が必要。
+- **VS Code / Cursor の Marp 拡張**は `.vscode/settings.json` でテーマ登録と `markdown.marp.html: true` を済ませてある。デッキはインライン HTML（`<br>`, `<p class="kicker">`、`pair` の `<p class="fig">`）を使うため html 有効化が必要。
 - **日本語で `**太字**` が効かないパターンがある**。閉じる `**` の**直前が `"` や `」` などの約物で、直後が文字**だと、Markdown が閉じ記号と認識せず `**` がそのまま画面に出る（例：`**AIと"作る"**ための` は失敗）。太字の範囲を語尾まで広げて `**AIと"作る"ための道具**` にすれば直る。閉じ `**` の直後が句読点なら問題ない。デッキを書いたら `grep -nE '["」』）]\*\*[^ 　]' decks/<deck>.md` で洗い出す。
 - **`pre`（コードブロック）は「そのまま打ち込むコマンド」専用**。テーマの `pre` は濃紺地のターミナル風なので、キー操作（`Shift + Tab` など）をここに入れると**打ち込むものと誤解される**。キー操作は引用（`>`）＋インラインコードで書く。
 - **`.marprc.yml` に `inputDir` を足さないこと**。`decks/` → `build/` を自動で対応付けられて一見便利だが、設定した瞬間にファイル名を渡すコマンドが全部 `[ERROR] Cannot pass files together with input directory.` で落ちる。1枚だけ PNG に書き出して見た目を確認する手段が失われるので、パスと `-o` を都度明示する方を選んでいる。
@@ -95,7 +95,7 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 - **レイアウトはスライドごとに `<!-- _class: ... -->` で指定**し、テーマ内の `section.<class>` で装飾する。クラス：`lead`（表紙。低ポリ背景を内包）、`stat`（大きな数字）、`trend`（シェア推移レール）、`flow`（連番ステップ図）、`grid`（2×2 カード）、`ba`（ビフォー/アフター表）、`center`（中央寄せ引用）、`refs`（参考）、`dense`（手順スライド用。`pre` と引用を詰めて行数を稼ぐ）、`split`（右グラデパネル。併用可、例：`_class: refs split`）、`pair`（本文＋右の図/QR。広い図は `pair wide`）。複数クラスは半角スペース区切り。
 - **コード表示**：`code`（インライン＝薄グレー地に濃紺）と `pre`（ブロック＝濃紺地に白抜き＝ターミナル風）をテーマ側で定義済み。default テーマの GitHub-markdown 由来 CSS に勝つため `!important` が必要（表・引用と同じ事情）。`pre` は「参加者がそのまま打つコマンド」に見えるので、**キー操作（`Shift + Tab` など）を `pre` で書かない**（打ち込むものと誤解される）。引用か太字で表す。
 - **`section.src` に表を置くときは注意**。`table{font-size:20px}` が `section.src{font-size:15px}` の継承に勝つため、テーマ側で `section.src table` を明示的に 15px に落としてある。同様の衝突は他のクラスでも起こりうる。
-- **図版は生レイアウト `<div>` を使わず、ネイティブ Markdown ＋ CSS で構築**：装飾した `<ol>`（flow）、`<ul>` グリッド、`<table>`。raw HTML が無効な環境でも描画される。
+- **図版は生レイアウト `<div>` を使わず、ネイティブ Markdown ＋ CSS で構築**：装飾した `<ol>`（flow）、`<ul>` グリッド、`<table>`。raw HTML が無効な環境でも描画される。**例外は `pair` の `.fig`**（`<p class="fig">` ＋ `<img>`）。QR・写真の右寄せキャプションは raw HTML が前提なので、`markdown.marp.html` が無効だと図が消える。
 - **ブランド埋め込み**：ロゴは `--logo-uri`（データ URI、`:root` で一度定義し `section` と `section.split` で再利用）。表紙背景は `section.lead` の背景にデータ URI で内包（半透明の紺ベールを重ねて白文字を可読化）。
 
 テーマを更新すると全デッキに反映される。デザインを変える場合はデッキではなくこのファイルを編集する。
