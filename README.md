@@ -15,6 +15,9 @@ tech-share/
 │   └── singularity.css       # 社内フォーマットを再現した自己完結テーマ
 ├── docs/                     # リポジトリの手順書・ドキュメント
 │   └── google-slides.md      # Google スライド出力（k1LoW/deck）の手順
+├── templates/                # 体験会用の定型スライド群（`体験会` ラベル付き企画で必須）
+│   ├── taikenkai-opening.md  # 表紙の直前に入れる複数枚
+│   └── taikenkai-closing.md  # デッキの最後に入れる複数枚
 ├── assets/                   # テーマ画像の元データ（logo.png / title-bg.png）
 ├── .github/ISSUE_TEMPLATE/   # 企画 Issue のテンプレート
 │   └── presentation-plan.md
@@ -29,6 +32,7 @@ tech-share/
 - **`build/`** … 書き出し先。`-o` で明示的にここへ出す。中身はいつでも捨てて再生成できる。
 - **`themes/singularity.css`** … 全デッキ共通のデザイン。社内フォーマットを CSS で再現し、ロゴ・表紙背景をデータ URI で内包した**自己完結テーマ**。デザイン変更はこのファイルを編集する（→[共有テーマ](#共有テーマthemessingularitycss)）。
 - **`docs/`** … **リポジトリの手順書置き場**。発表ごとの企画書はここには置かない（→[企画は Issue で行う](#企画は-issue-で行う)）。
+- **`templates/`** … **体験会用の定型スライド群**。企画 Issue に `体験会` ラベルが付いたデッキでは、`taikenkai-opening.md` の全スライドを表紙の直前に、`taikenkai-closing.md` の全スライドをデッキの最後に、順序どおり・文言を変えずに転記する（必須）。
 - **`assets/`** … テーマに埋め込んだ画像の元データ。テーマがデータ URI で内包しているため、レンダリング時には参照されない（保管用）。
 - **`.github/ISSUE_TEMPLATE/presentation-plan.md`** … 企画 Issue のテンプレート（狙い・タイムテーブル・各パート・スライド構成表・Marp 実装メモ）。
 
@@ -48,6 +52,7 @@ decks/20260101_example.md
 反復して直す作業はコメントと本文編集の方が向いているためです。
 
 1. **起票**：Issue を新規作成し、テンプレート「**発表企画**」を選ぶ。`企画` ラベルが自動で付きます。
+   **体験会イベントの企画の場合は、あわせて `体験会` ラベルを手動で付けてください**（デッキに `templates/` の定型スライドが必須になります）。
 2. **推敲**：コメントで議論し、合意した内容は Issue 本文に反映していく。
 3. **デッキ作成**：`decks/YYYYMMDD_<topic>.md` を作る。**デッキ冒頭のコメントに企画 Issue の URL を書き**、Issue 本文の「デッキ」欄にもパスを書き戻す。
 4. **転記**：企画の「話すポイント」は各スライド末尾の発表者ノート（HTML コメント）に転記する。
@@ -148,7 +153,9 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
 3. **表紙スライドのコメントに企画 Issue の URL を記載する**（デッキから企画へ辿れるようにする）。
 4. 企画の「ひとことスライド文言案」を見出しに、要点は 3〜4 項目に圧縮する（1 枚 1 メッセージ）。
 5. レイアウトは各スライドの `<!-- _class: ... -->` で切り替える（下記クラス一覧）。
-6. 企画の「話すポイント」を各スライド末尾の発表者ノートに転記し、コミット / PR に `Closes #N` を書く。
+6. **企画 Issue に `体験会` ラベルが付いている場合**は、`templates/taikenkai-opening.md` の全スライドを表紙の直前に、
+   `templates/taikenkai-closing.md` の全スライドをデッキの最後に、順序どおり・文言を変えずに転記する（必須）。
+7. 企画の「話すポイント」を各スライド末尾の発表者ノートに転記し、コミット / PR に `Closes #N` を書く。
 
 スライド作成には Claude Code のスキル **`marp-slide`**（softaworks/agent-toolkit）を利用できますが、
 デザインは常に共有テーマ `themes/singularity.css` 側で管理します（デッキにインライン `<style>` は書かない）。
