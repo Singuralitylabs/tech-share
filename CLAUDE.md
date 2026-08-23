@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `decks/YYYYMMDD_*.gslides.md` — **[k1LoW/deck](https://github.com/k1LoW/deck) 用デッキ**（Google スライド出力）。Marp 版とは**別物**なので混同しないこと。記法が違い（`_class` や `theme` は無く、レイアウトは `<!-- {"layout": "..."} -->`）、`themes/singularity.css` も効かない。デザインは Google スライド側のテーマ／レイアウトマスターが持つ。セットアップと運用は `docs/google-slides.md` を参照。**`deck apply` は Markdown に無いスライドを削除する**ので、Slides 側にだけ足したページは消える（詳細は手順書参照）。
 - `build/` — **生成物の置き場**。`-o` で明示的にここへ書き出す。git 管理外。
 - `docs/` — **リポジトリの手順書置き場**（`google-slides.md` など）。発表ごとの企画書はここには置かない。
+- `templates/` — **体験会用の定型スライド群**（`taikenkai-opening.md`＝表紙直前用、`taikenkai-closing.md`＝末尾用）。企画 Issue に `体験会` ラベルが付いたデッキでは転記が**必須**（下記「体験会デッキの必須スライド」）。`decks/` に置かないのは、日付付きデッキやライブプレビュー（`-s decks`）の対象と混ざるのを避けるため。
 - `themes/singularity.css` — **共有 Marp テーマ**。全デッキのデザイン（配色・レイアウトクラス・ロゴ・表紙背景）はここに集約されている。詳細は下記「テーマ」。
 - `.marprc.yml` — Marp CLI 設定。`themeSet: ["./themes"]` によりテーマを自動登録し、`theme: singularity` を解決する。`allowLocalFiles: true` も設定済み。**`inputDir` は意図的に設定していない**（理由は下記「ハマりどころ」）。
 - `.vscode/settings.json` — VS Code / Cursor の Marp 拡張向け。テーマ登録（`markdown.marp.themes`）と `markdown.marp.html: true`（インライン HTML 有効化）。
@@ -24,12 +25,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 企画 Issue からデッキを作る流れ
 
-1. **企画 Issue を読む**：GitHub MCP の `issue_read`（`method: "get"`／議論は `get_comments`）で本文とコメントを取得する。どの Issue か分からない場合は `list_issues` を `labels: ["企画"]` で絞る。**Issue 本文が正、コメントは経緯**として扱い、食い違ったら本文の最新版に従う。
-2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。
+1. **企画 Issue を読む**：GitHub MCP の `issue_read`（`method: "get"`／議論は `get_comments`）で本文とコメントを取得する。どの Issue か分からない場合は `list_issues` を `labels: ["企画"]` で絞る。**Issue 本文が正、コメントは経緯**として扱い、食い違ったら本文の最新版に従う。このとき **Issue のラベルを必ず確認**し、`体験会` ラベルが付いていたら下記「体験会デッキの必須スライド」を適用する。
+2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。企画 Issue が `体験会` ラベル付きなら、`templates/taikenkai-opening.md` の定型スライド群を**表紙（`_class: lead`）スライドの前**（front matter の直後）に、`templates/taikenkai-closing.md` の定型スライド群を**デッキの最後**に転記する（詳細・注意点は下記「体験会デッキの必須スライド」）。**`templates/` の中身が仮置き（プレースホルダ）のままなら転記せず**、Issue #7 の進捗を確認する。
 3. **紐付ける**：表紙スライドのコメントの先頭に `企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/N` を書き、Issue 本文の「デッキ」欄にもデッキのパスを書き戻す。
 4. **転記する**：企画の「話すポイント」「補足メモ」を各スライド末尾の発表者ノート（HTML コメント）に落とす。**Issue を参照しないと分からない状態にしない**。
 5. **確認する**：PNG 書き出しで全スライドのはみ出しを目視確認する（下記「コマンド」）。
 6. **閉じる**：コミット / PR 本文に `Closes #N` を書いて企画 Issue をクローズする。
+
+## 体験会デッキの必須スライド（`体験会` ラベル）
+
+体験会イベント向けの発表は、**企画 Issue に `体験会` ラベルを付けて識別**する（`list_issues` なら `labels: ["企画", "体験会"]` で絞れる）。`体験会` ラベル付きの企画から作るデッキには、以下の定型スライドを**必ず**入れる。
+
+> ⚠️ **`templates/taikenkai-*.md` は現在プレースホルダ**（実内容の反映は Issue #7）。プレースホルダのまま本番デッキに転記してはいけない。`体験会` ラベル付きの企画に着手する際は、まず Issue #7 が完了しているか確認する。
+
+- **`templates/taikenkai-opening.md`** の `_paginate: skip` 行から始まる全スライド → **表紙（`_class: lead`）スライドの前**（front matter の直後）。
+- **`templates/taikenkai-closing.md`** の `_paginate: skip` 行から始まる全スライド → **デッキの最後**（APPENDIX・参考スライドも含めた全スライドの後）。
+
+転記時の注意点（両ファイル共通、テンプレート冒頭のガイドコメントにも同じ内容あり）：
+
+- **全枚・順序どおり・文言を改変せず**転記する（省略・並べ替え・要約は禁止）。ただし **front matter とガイドコメント自体（このコメントブロックの説明文）は転記対象外**。Marp は各スライド先頭の HTML コメントを発表者ノートとして扱うため、ガイドコメントを転記するとデッキの発表者ノートに混入する。
+- 転記の**継ぎ目に `---`（スライド区切り）を入れる**。入れないと、冒頭定型は表紙スライドと、末尾定型はデッキの最終スライドと1枚に合体してしまう（Marp ははみ出し同様これを警告しない）。
+- 各スライド先頭の `<!-- _paginate: skip -->` `<!-- _footer: '' -->` もスライドごとに転記する（ページ番号・フッターが定型スライドに出ないようにするため）。この2つは**そのスライド1枚にしか効かないスポットディレクティブ**なので、複数枚あるスライドの2枚目以降にも書き漏らさないこと。**`_paginate: false` ではなく `_paginate: skip` を使う**：`false` は番号を非表示にするだけで本編のページカウントには含まれてしまい、本編スライドの番号が定型スライドの枚数分ずれる。
+- テンプレート側の front matter（`theme: singularity` など）は各ファイル単体のプレビュー用なので転記しない。
+
+定型スライドの内容を変えたいときはデッキ側ではなく `templates/` のファイルを直す（次回以降のデッキに反映される。転記済みデッキには自動反映されない点に注意）。
 
 ## コマンド
 
@@ -85,4 +104,5 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 - **表紙スライドのコメント先頭に企画 Issue の URL** を書く（デッキ → 企画の導線）。
 - 企画 Issue の「ひとことスライド文言案」を `##` の見出しに使い、各スライドは要点 3〜4 項目に圧縮、1 枚 1 メッセージ。
 - パートの見出しは `<!-- _header: 'PART 0X · ラベル' -->`、発表者ノート（企画 Issue の話すポイント）は各スライド末尾の `<!-- ... -->` コメントに置く。
+- 企画 Issue に `体験会` ラベルが付いているデッキは、`templates/` の定型スライド群（冒頭・末尾）の転記が必須（上記「体験会デッキの必須スライド」）。
 - `marp-slide` スキル（softaworks/agent-toolkit）は導入済みだが、雛形生成の補助であり、デザインは常に共有テーマ側で管理する。
