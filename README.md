@@ -18,7 +18,9 @@ tech-share/
 ├── templates/                # 体験会用の定型スライド群（`体験会` ラベル付き企画で必須）
 │   ├── taikenkai-opening.md  # 表紙の直前に入れる複数枚
 │   └── taikenkai-closing.md  # デッキの最後に入れる複数枚
-├── assets/                   # テーマ画像の元データ（logo.png / title-bg.png）
+├── assets/                   # 画像（テーマ元データ ＋ 体験会定型の図）
+│   ├── logo.png / title-bg.png
+│   └── taikenkai/            # 定型スライド用の QR・写真・スクリーンショット
 ├── .github/ISSUE_TEMPLATE/   # 企画 Issue のテンプレート
 │   └── presentation-plan.md
 ├── .marprc.yml               # Marp CLI 設定（テーマ自動登録）
@@ -32,8 +34,8 @@ tech-share/
 - **`build/`** … 書き出し先。`-o` で明示的にここへ出す。中身はいつでも捨てて再生成できる。
 - **`themes/singularity.css`** … 全デッキ共通のデザイン。社内フォーマットを CSS で再現し、ロゴ・表紙背景をデータ URI で内包した**自己完結テーマ**。デザイン変更はこのファイルを編集する（→[共有テーマ](#共有テーマthemessingularitycss)）。
 - **`docs/`** … **リポジトリの手順書置き場**。発表ごとの企画書はここには置かない（→[企画は Issue で行う](#企画は-issue-で行う)）。
-- **`templates/`** … **体験会用の定型スライド群**。企画 Issue に `体験会` ラベルが付いたデッキでは、`taikenkai-opening.md` の全スライドを表紙の直前に、`taikenkai-closing.md` の全スライドをデッキの最後に、順序どおり・文言を変えずに転記する（必須）。**ただし現在は中身がプレースホルダなので、Issue #7 が完了するまで転記しない。**
-- **`assets/`** … テーマに埋め込んだ画像の元データ。テーマがデータ URI で内包しているため、レンダリング時には参照されない（保管用）。
+- **`templates/`** … **体験会用の定型スライド群**。企画 Issue に `体験会` ラベルが付いたデッキでは、`taikenkai-opening.md` の全スライドを表紙の直前に、`taikenkai-closing.md` の全スライドをデッキの最後に、順序どおり・文言を変えずに転記する（必須）。例外は closing の差し替え欄だけで、転記時に開催日程と月次活動を最新化する（型は残す。詳細は CLAUDE.md「体験会デッキの必須スライド」）。
+- **`assets/`** … テーマに埋め込んだ画像の元データ（`logo.png` / `title-bg.png`。レンダリング時には参照されない）と、体験会定型スライドが参照する図（`taikenkai/`）。
 - **`.github/ISSUE_TEMPLATE/presentation-plan.md`** … 企画 Issue のテンプレート（狙い・タイムテーブル・各パート・スライド構成表・Marp 実装メモ）。
 
 ### 命名規則
@@ -130,8 +132,7 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
 - **`--no-stdin` は必須**。付けない（かつ `</dev/null` を渡さない）と、非対話シェルで marp-cli が
   **stdin 待ちのままハング** します（止まって見えるが、標準入力をブロックしているだけ）。
 - **PNG / PDF / PPTX・プレビューには Chrome が必要**。`CHROME_PATH` に実行ファイルのパスを指定します（上記は macOS の例）。
-- **`--allow-local-files` は不要**。ロゴ・表紙背景はテーマにデータ URI で内包しており、デッキはローカル画像を参照しません。
-  将来デッキにローカル画像（スクショ等）を足す場合に備え、`.marprc.yml` に `allowLocalFiles: true` を設定済みなので、その場合もフラグは要りません。
+- **`--allow-local-files` は不要**。ロゴ・表紙背景はテーマにデータ URI で内包している。体験会定型スライドは `assets/taikenkai/` のローカル画像を参照するが、`.marprc.yml` に `allowLocalFiles: true` を設定済みなので追加フラグは要らない。
 - **拡張プレビューと最終出力の差**：Cursor/VS Code 拡張は `markdown.marp.html` を有効にしないと
   インライン HTML（`<br>` など）が反映されません。`.vscode/settings.json` で有効化済みです。
 - **`!important` の上書き**：テーマは `default`（GitHub 由来）を `@import` して継承しているため、
@@ -154,8 +155,7 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
 4. 企画の「ひとことスライド文言案」を見出しに、要点は 3〜4 項目に圧縮する（1 枚 1 メッセージ）。
 5. レイアウトは各スライドの `<!-- _class: ... -->` で切り替える（下記クラス一覧）。
 6. **企画 Issue に `体験会` ラベルが付いている場合**は、`templates/` の定型スライドの転記が必須。
-   **ただし現在は中身がプレースホルダなので、Issue #7 が完了するまで転記しない**（進捗を確認する）。
-   手順・注意点（`---` 区切りや `_paginate: skip` など）は CLAUDE.md「体験会デッキの必須スライド」を参照。
+   手順・注意点（`---` 区切り、`_paginate: skip`、closing の差し替え欄）は CLAUDE.md「体験会デッキの必須スライド」を参照。
 7. 企画の「話すポイント」を各スライド末尾の発表者ノートに転記し、コミット / PR に `Closes #N` を書く。
 
 スライド作成には Claude Code のスキル **`marp-slide`**（softaworks/agent-toolkit）を利用できますが、
@@ -186,6 +186,7 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
   | `src` | 出典など密なリスト（15px） |
   | `dense` | 手順スライド用（`pre` と引用を詰めて行数を稼ぐ） |
   | `split` | 右側に青グラデパネル（PDF 3枚目） |
+  | `pair` | 本文＋右の図/QR（広い図は `pair wide`） |
 
   > `refs` と `src` は font-size が衝突します（両方付けると 18px になる）。出典スライドは **`src` 単独**で使ってください。
 
