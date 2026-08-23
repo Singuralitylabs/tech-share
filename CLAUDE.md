@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 企画 Issue からデッキを作る流れ
 
 1. **企画 Issue を読む**：GitHub MCP の `issue_read`（`method: "get"`／議論は `get_comments`）で本文とコメントを取得する。どの Issue か分からない場合は `list_issues` を `labels: ["企画"]` で絞る。**Issue 本文が正、コメントは経緯**として扱い、食い違ったら本文の最新版に従う。このとき **Issue のラベルを必ず確認**し、`体験会` ラベルが付いていたら下記「体験会デッキの必須スライド」を適用する。
-2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。企画 Issue が `体験会` ラベル付きなら、`templates/taikenkai-opening.md` の定型スライド群を**表紙の直前**（デッキの物理的な先頭）に、`templates/taikenkai-closing.md` の定型スライド群を**デッキの最後**に転記する。
+2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。企画 Issue が `体験会` ラベル付きなら、`templates/taikenkai-opening.md` の定型スライド群を**表紙（`_class: lead`）スライドの前**（front matter の直後）に、`templates/taikenkai-closing.md` の定型スライド群を**デッキの最後**に転記する（詳細・注意点は下記「体験会デッキの必須スライド」）。**`templates/` の中身が仮置き（プレースホルダ）のままなら転記せず**、Issue #7 の進捗を確認する。
 3. **紐付ける**：表紙スライドのコメントの先頭に `企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/N` を書き、Issue 本文の「デッキ」欄にもデッキのパスを書き戻す。
 4. **転記する**：企画の「話すポイント」「補足メモ」を各スライド末尾の発表者ノート（HTML コメント）に落とす。**Issue を参照しないと分からない状態にしない**。
 5. **確認する**：PNG 書き出しで全スライドのはみ出しを目視確認する（下記「コマンド」）。
@@ -36,10 +36,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 体験会イベント向けの発表は、**企画 Issue に `体験会` ラベルを付けて識別**する（`list_issues` なら `labels: ["企画", "体験会"]` で絞れる）。`体験会` ラベル付きの企画から作るデッキには、以下の定型スライドを**必ず**入れる。
 
-- **`templates/taikenkai-opening.md`** の全スライド → **表紙（lead）の直前**＝デッキの物理的な先頭。各スライドの `<!-- _paginate: false -->` `<!-- _footer: '' -->` も一緒に転記する（ページ番号・フッターが表紙より前に出ないようにするため）。
-- **`templates/taikenkai-closing.md`** の全スライド → **デッキの最後**（APPENDIX・参考スライドも含めた全スライドの後）。
+> ⚠️ **`templates/taikenkai-*.md` は現在プレースホルダ**（実内容の反映は Issue #7）。プレースホルダのまま本番デッキに転記してはいけない。`体験会` ラベル付きの企画に着手する際は、まず Issue #7 が完了しているか確認する。
 
-どちらも**全枚・順序どおり・文言を改変せず**転記する（省略・並べ替え・要約は禁止）。テンプレート側の front matter は各ファイル単体のプレビュー用なので転記しない。定型スライドの内容を変えたいときはデッキ側ではなく `templates/` のファイルを直す（次回以降のデッキに反映される。転記済みデッキには自動反映されない点に注意）。
+- **`templates/taikenkai-opening.md`** の `_paginate: skip` 行から始まる全スライド → **表紙（`_class: lead`）スライドの前**（front matter の直後）。
+- **`templates/taikenkai-closing.md`** の `_paginate: skip` 行から始まる全スライド → **デッキの最後**（APPENDIX・参考スライドも含めた全スライドの後）。
+
+転記時の注意点（両ファイル共通、テンプレート冒頭のガイドコメントにも同じ内容あり）：
+
+- **全枚・順序どおり・文言を改変せず**転記する（省略・並べ替え・要約は禁止）。ただし **front matter とガイドコメント自体（このコメントブロックの説明文）は転記対象外**。Marp は各スライド先頭の HTML コメントを発表者ノートとして扱うため、ガイドコメントを転記するとデッキの発表者ノートに混入する。
+- 転記の**継ぎ目に `---`（スライド区切り）を入れる**。入れないと、冒頭定型は表紙スライドと、末尾定型はデッキの最終スライドと1枚に合体してしまう（Marp ははみ出し同様これを警告しない）。
+- 各スライド先頭の `<!-- _paginate: skip -->` `<!-- _footer: '' -->` もスライドごとに転記する（ページ番号・フッターが定型スライドに出ないようにするため）。この2つは**そのスライド1枚にしか効かないスポットディレクティブ**なので、複数枚あるスライドの2枚目以降にも書き漏らさないこと。**`_paginate: false` ではなく `_paginate: skip` を使う**：`false` は番号を非表示にするだけで本編のページカウントには含まれてしまい、本編スライドの番号が定型スライドの枚数分ずれる。
+- テンプレート側の front matter（`theme: singularity` など）は各ファイル単体のプレビュー用なので転記しない。
+
+定型スライドの内容を変えたいときはデッキ側ではなく `templates/` のファイルを直す（次回以降のデッキに反映される。転記済みデッキには自動反映されない点に注意）。
 
 ## コマンド
 
