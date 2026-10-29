@@ -85,7 +85,12 @@ def wrap(deck_path: str, event: str = "") -> None:
     body = body.strip("\n")
     new = f"{fm}\n{opening}\n---\n\n{body}\n\n---\n\n{closing}"
     deck.write_text(new, encoding="utf-8")
-    print(f"{deck}: opening を表紙の前に、closing を末尾に転記した。差し替え欄（今後のイベントのお知らせ／○月の主なシンラボ活動の紹介）を最新化すること", file=sys.stderr)
+    print(
+        f"{deck}: opening を表紙の前に、closing を末尾に転記した。"
+        f"体験会名は「{event or EVENT_DEFAULT}」で入れた（違う回なら --event で指定し直す）。"
+        "差し替え欄（今後のイベントのお知らせ／○月の主なシンラボ活動の紹介）を最新化すること",
+        file=sys.stderr,
+    )
 
 
 def main() -> None:

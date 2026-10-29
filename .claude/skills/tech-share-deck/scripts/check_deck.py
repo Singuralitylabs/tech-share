@@ -98,8 +98,12 @@ def template_pattern(tmpl: str) -> re.Pattern:
     return re.compile(out)
 
 
-def same(text: str, tmpl: str) -> bool:
-    return bool(template_pattern(tmpl).fullmatch(text))
+def same(text: str, tmpl: str, events: list[str] | None = None) -> bool:
+    """定型スライド1枚と一致するか。events を渡すと、差し替え欄の体験会名をそこへ集める（スライド間の一致検査用）。"""
+    m = template_pattern(tmpl).fullmatch(text)
+    if m and events is not None and "ev" in m.groupdict():
+        events.append(m.group("ev"))
+    return bool(m)
 
 
 def template_slides(kind: str) -> list[str]:
@@ -144,6 +148,7 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
         return set()
 
     used: set[int] = set()
+    events: list[str] = []  # アンケート・ご支援スライドの体験会名。opening・closing を通して1種類であること
     # opening：表紙の直前に全枚・同順・同文
     lead_idx = next((i for i, s in enumerate(slides) if "lead" in " ".join(s.classes()).split()), None)
     if lead_idx is None:
@@ -151,7 +156,7 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
     if lead_idx != len(opening):
         err(f"表紙（_class: lead）の前のスライドが {lead_idx} 枚。opening 定型は {len(opening)} 枚（全枚を表紙の直前に置く）")
     for j, t in enumerate(opening):
-        if j < lead_idx and same(texts[j], t):
+        if j < lead_idx and same(texts[j], t, events):
             used.add(j)
         else:
             s = slides[j] if j < len(slides) else None
@@ -175,11 +180,13 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
             if ok and texts[k] == t:
                 warn(f"L{s.start}: 差し替え欄「{s.heading()[3:]}」がテンプレートのまま。最新の内容に更新したか確認する")
         else:
-            ok = same(texts[k], t)
+            ok = same(texts[k], t, events)
         if ok:
             used.add(k)
         else:
             err(f"L{s.start}: closing 定型 {j + 1} 枚目（{tmpl_head[3:]}）が templates/taikenkai-closing.md と一致しない（文言改変・合体・欠落・`---` 漏れ）")
+    if len(set(events)) > 1:
+        err(f"体験会名が不一致：{sorted(set(events))}（アンケート・ご支援スライドの体験会名は opening・closing を通して同じ名前にそろえる）")
     return used
 
 

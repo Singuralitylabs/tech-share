@@ -181,7 +181,7 @@ opening 3枚目とほぼ同内容。導入文だけ「本〜継続するため�
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
-<!-- _class: tk pair -->
+<!-- _class: tk pair wide -->
 
 ## シンラボ活動のご紹介「Sinlab Study」
 
@@ -198,7 +198,7 @@ opening 3枚目とほぼ同内容。導入文だけ「本〜継続するため�
 | サービスサイト | 紹介サイト |
 
 <p class="fig">
-<img src="../assets/taikenkai/screenshot-study-gas.jpeg" alt="フェーズ別画面" width="420">
+<img src="../assets/taikenkai/screenshot-study-gas.jpeg" alt="フェーズ別画面" width="500">
 フェーズ別画面
 </p>
 
@@ -332,7 +332,7 @@ QRの取り違えに注意（左＝サービスサイト / 右＝紹介サイト
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
-<!-- _class: tk pair -->
+<!-- _class: tk pair wide -->
 
 ## シンラボ活動のご紹介「Sinlab Knowledge」
 
@@ -350,7 +350,7 @@ Web技術の重要な知識をまとめたサイト（会員のみアクセス�
 | サービスサイト |
 
 <p class="fig">
-<img src="../assets/taikenkai/screenshot-knowledge.jpeg" alt="Sinlab Knowledge の画面" width="420">
+<img src="../assets/taikenkai/screenshot-knowledge.jpeg" alt="Sinlab Knowledge の画面" width="500">
 https://knowledge.future-tech-association.org/
 </p>
 
