@@ -11,3 +11,6 @@ decks/*.png
 
 # macOS
 .DS_Store
+
+# スキル同梱スクリプト（.claude/skills/*/scripts/）の実行で生成される
+__pycache__/
