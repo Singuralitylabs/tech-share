@@ -109,6 +109,28 @@ pre code{
   color:#e9f2f9 !important;
   font-size:21px;
 }
+/* 言語タグ付き（```json など）のシンタックスハイライト。default テーマは明るい背景向けの
+   --color-prettylights-syntax-* を当てるため、濃紺の pre 上では文字が沈んで読めない。
+   pre の中だけ、暗い背景向けの値（GitHub dark 系をブランド色に寄せたもの）に差し替える。 */
+pre{
+  --color-prettylights-syntax-comment:#8fa6ba;
+  --color-prettylights-syntax-constant:#8ad4ff;
+  --color-prettylights-syntax-entity:#d7b8ff;
+  --color-prettylights-syntax-storage-modifier-import:#e9f2f9;
+  --color-prettylights-syntax-entity-tag:#8fe3a0;
+  --color-prettylights-syntax-keyword:#ff9b8f;
+  --color-prettylights-syntax-string:#a8e6ee;
+  --color-prettylights-syntax-variable:#ffbe7a;
+  --color-prettylights-syntax-string-regexp:#8fe3a0;
+  --color-prettylights-syntax-markup-heading:#8ad4ff;
+  --color-prettylights-syntax-markup-list:#ffd479;
+  --color-prettylights-syntax-markup-italic:#e9f2f9;
+  --color-prettylights-syntax-markup-bold:#e9f2f9;
+  --color-prettylights-syntax-markup-inserted-text:#c8f5d0;
+  --color-prettylights-syntax-markup-inserted-bg:#1d4a2c;
+  --color-prettylights-syntax-markup-deleted-text:#ffd7d2;
+  --color-prettylights-syntax-markup-deleted-bg:#5a1f1f;
+}
 /* ハンズオンの手順スライドは行数が多い。pre・引用を詰めたいスライドに付ける */
 section.dense pre{ padding:12px 18px !important; margin:10px 0; }
 section.dense pre code{ font-size:19px; }
