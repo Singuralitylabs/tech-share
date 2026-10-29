@@ -314,3 +314,45 @@ section.pair .fig{
 section.pair .fig img{ display:block; margin:0 auto; max-height:42%; max-width:100%; }
 section.pair.wide{ padding-right:calc(42% + 80px); }
 section.pair.wide .fig{ width:42%; }
+
+/* ---------- TK (体験会定型スライド。templates/taikenkai-*.md 専用) ----------
+   前回の体験会資料（Google スライド）の見た目に寄せる：見出しを上端に固定して本文を上から詰め、
+   文字を大きく、見出しの罫線は左端から伸ばす。本編スライドには使わない。
+   併用：`tk pair` / `tk pair wide`（右に図）、`tk msg`（中央の大きな一文）、`tk sns`（SNS 表）。 */
+section.tk{
+  /* default テーマは display:block ＋ place-content:safe center center で縦中央に寄せている。上寄せに戻す */
+  place-content:start;
+  font-size:35px; line-height:1.5;
+  padding:40px 64px 36px 46px;
+}
+section.tk h2{ font-size:50px; font-weight:500; margin:0 0 26px; padding-bottom:14px; }
+section.tk h2::after{ left:-46px; width:900px; height:3px; }
+section.tk ul{ margin:8px 0; }
+section.tk li{ margin:6px 0; }
+section.tk ul ul{ margin:2px 0; font-size:.9em; }
+section.tk p{ margin:0 0 16px; }
+/* 画像だけの段落（QR など）は中央に置く */
+section.tk p:has(> img:only-child){ text-align:center; margin-top:8px; }
+/* pair：見出しは右の図の上まで全幅に伸ばし、図は見出しの下に置く */
+section.tk.pair{ padding-right:380px; }
+section.tk.pair h2{ margin-right:-316px; }
+section.tk.pair .fig{ right:46px; top:140px; bottom:36px; width:310px; font-size:22px; overflow-wrap:anywhere; }
+section.tk.pair.wide{ padding-right:600px; }
+section.tk.pair.wide h2{ margin-right:-536px; }
+section.tk.pair.wide .fig{ width:530px; }
+section.tk.pair .fig img{ max-height:62%; }
+section.tk.pair.wide .fig img{ max-height:80%; }
+/* 中央に大きく置く一文（「シンギュラリティ・ラボとは」「最後に」） */
+section.tk.msg p{ text-align:center; font-size:46px; line-height:1.75; color:var(--ink); margin:30px 0 18px; }
+section.tk.msg p:has(> img:only-child){ margin-top:0; }
+/* SNS 表：1行目＝ロゴ、2行目＝ラベル。見出し行の濃紺塗りを外す */
+section.tk.sns table{ width:auto; margin:6px auto 12px 0; font-size:26px; }
+section.tk.sns table th{ background:#fff !important; border-color:var(--ink); text-align:center; padding:10px 34px; }
+section.tk.sns table td{ border-color:var(--ink); text-align:center; line-height:1.35; padding:8px 26px; color:var(--ink) !important; }
+section.tk.sns table tr:nth-child(2n){ background:#fff !important; }
+section.tk.sns ul{ list-style:none; padding-left:0; font-size:18px; line-height:1.4; }
+section.tk.sns li{ margin:2px 0; }
+/* 小さい QR を横に並べる表（Sinlab Study / Knowledge）。罫線・塗りを消してキャプションだけ残す */
+section.tk:not(.sns) table:has(img){ width:auto; margin:6px 0; font-size:18px; border:none; }
+section.tk:not(.sns) table:has(img) th, section.tk:not(.sns) table:has(img) td{ border:none; background:transparent !important; color:var(--body) !important; text-align:center; padding:2px 16px; font-weight:400; }
+section.tk:not(.sns) table:has(img) tr{ background:transparent !important; border:none; }

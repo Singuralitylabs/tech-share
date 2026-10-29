@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from taikenkai_slides import template_body  # noqa: E402
+from taikenkai_slides import EVENT_DEFAULT, EVENT_SLIDE_RE, template_body  # noqa: E402
 
 ISSUE_URL = re.compile(r"企画 Issue：https://github\.com/Singuralitylabs/tech-share/issues/\d+")
 CLASS_RE = re.compile(r"<!--\s*_class:\s*([^>]*?)\s*-->")
@@ -87,6 +87,21 @@ def norm(text: str) -> str:
     return "\n".join(l.rstrip() for l in text.strip("\n").splitlines())
 
 
+def template_pattern(tmpl: str) -> re.Pattern:
+    """定型スライド1枚と照合する正規表現。体験会名の差し替え欄は、1枚の中で同じ名前なら任意の名前を許す。"""
+    if not EVENT_SLIDE_RE.search(tmpl):
+        return re.compile(re.escape(tmpl))
+    parts = [re.escape(p) for p in tmpl.split(EVENT_DEFAULT)]
+    out = parts[0]
+    for k, p in enumerate(parts[1:]):
+        out += (r"(?P<ev>[^\n]+?)" if k == 0 else r"(?P=ev)") + p
+    return re.compile(out)
+
+
+def same(text: str, tmpl: str) -> bool:
+    return bool(template_pattern(tmpl).fullmatch(text))
+
+
 def template_slides(kind: str) -> list[str]:
     body = template_body(kind)
     return [norm(s.text) for s in split_slides(body.splitlines(), 0)]
@@ -119,8 +134,9 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
     """定型スライドを検査し、定型として扱ったスライドの index を返す。"""
     opening, closing = template_slides("opening"), template_slides("closing")
     texts = [norm(s.text) for s in slides]
-    present = any(t == opening[0] for t in texts[:3]) or any(
-        s.heading() == Slide(0, closing[0].splitlines()).heading() for s in slides[-len(closing):]
+    closing_head = Slide(0, closing[0].splitlines()).heading()
+    present = any(same(t, opening[0]) for t in texts[:3]) or any(
+        same(s.heading(), closing_head) for s in slides[-len(closing):]
     )
     if not present:
         if required:
@@ -135,7 +151,7 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
     if lead_idx != len(opening):
         err(f"表紙（_class: lead）の前のスライドが {lead_idx} 枚。opening 定型は {len(opening)} 枚（全枚を表紙の直前に置く）")
     for j, t in enumerate(opening):
-        if j < lead_idx and texts[j] == t:
+        if j < lead_idx and same(texts[j], t):
             used.add(j)
         else:
             s = slides[j] if j < len(slides) else None
@@ -159,7 +175,7 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
             if ok and texts[k] == t:
                 warn(f"L{s.start}: 差し替え欄「{s.heading()[3:]}」がテンプレートのまま。最新の内容に更新したか確認する")
         else:
-            ok = texts[k] == t
+            ok = same(texts[k], t)
         if ok:
             used.add(k)
         else:

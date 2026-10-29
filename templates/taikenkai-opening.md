@@ -19,23 +19,27 @@ lang: ja
 - 画像パス `../assets/taikenkai/` は `templates/` からも `decks/` からも同じ相対位置なので、転記時に書き換えない。
 - この front matter はこのファイル単体をプレビューするためのもの。デッキへは転記しない。
 - 末尾用の定型スライドは `templates/taikenkai-closing.md`（別ファイル）。
-- 差し替え欄（転記時に改変してよい箇所）は opening には無い。日程・月次活動の差し替えは closing 側。
+- 差し替え欄（転記時に改変してよい箇所）：「ご支援のお願い」の見出しと導入文にある体験会名「AI駆動開発」だけ
+  （例：「Web技術」。closing のアンケート・ご支援スライドと同じ名前にそろえる。`taikenkai_slides.py wrap --event 名前` で一括で入る）。
+  それ以外の文言・画像・順序は改変禁止。日程・月次活動の差し替えは closing 側。
+- 各スライドの `_class` に付いている `tk` は、前回の体験会資料（Google スライド）の見た目に寄せる体験会専用クラス。外さない。
 -->
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
+<!-- _class: tk sns -->
 
 ## 過去体験会の情報は各種SNSでも公開中です
 
-様々なSNSを通じてプログラミングのスキルアップに役立つ情報を発信中！！
+様々なSNSを通じてプログラミングのスキルアップに役立つ<br>情報を発信中！！
 
-| X | note | YouTube |
-|---|---|---|
-| ![w:72](../assets/taikenkai/sns-x.jpeg)<br>イベント情報 / スキルアップ情報 | ![w:130](../assets/taikenkai/sns-note.jpeg)<br>Web/AI開発の技術記事 | ![w:140](../assets/taikenkai/sns-youtube.jpeg)<br>AI技術・GAS 動画配信 |
+| ![w:56](../assets/taikenkai/sns-x.jpeg) | ![w:120](../assets/taikenkai/sns-note.jpeg) | ![w:130](../assets/taikenkai/sns-youtube.jpeg) |
+|:---:|:---:|:---:|
+| イベント情報<br>スキルアップ情報 | Web/AI開発の<br>技術記事 | AI技術・GAS<br>動画配信 |
 
-- **Xアカウント**：https://x.com/helloCodeSchool
-- **noteアカウント**：https://note.com/hello_coding
-- **YouTubeアカウント**：https://www.youtube.com/@エンジニアチャンネル
+- Xアカウント：https://x.com/helloCodeSchool
+- noteアカウント：https://note.com/hello_coding
+- YouTubeアカウント：https://www.youtube.com/@エンジニアチャンネル
 
 <!--
 チャットや口頭でアカウントを案内するときの控え。
@@ -48,6 +52,7 @@ YouTube：https://www.youtube.com/@エンジニアチャンネル
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
+<!-- _class: tk -->
 
 ## イベント開始前のご案内
 
@@ -64,11 +69,11 @@ YouTube：https://www.youtube.com/@エンジニアチャンネル
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
-<!-- _class: pair -->
+<!-- _class: tk pair -->
 
 ## AI駆動開発 体験会のご支援のお願い
 
-AI駆動開発 体験会を継続するためにご支援をお願いいたします
+AI駆動開発 体験会を継続するために<br>ご支援をお願いいたします
 
 - 金額は任意で設定可（500円以上）
 - Stripeによる安全な決済
