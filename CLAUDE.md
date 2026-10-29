@@ -93,7 +93,7 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 - 配色：白 `#f9fafc`、濃紺→シアンのグラデ `#014e94 → #66c5d2`、太字＝濃紺。フォント：Noto Sans JP ＋ Inter。
 - **PDF の 3 レイアウトがスライドの役割に対応**：1枚目（ローポリ表紙）→ 表紙、2枚目（白＋グラデ罫線＋ロゴ）→ 本文・クロージング、3枚目（右側の青グラデパネル）→ 最後／参考スライド。
 - **レイアウトはスライドごとに `<!-- _class: ... -->` で指定**し、テーマ内の `section.<class>` で装飾する。クラス：`lead`（表紙。低ポリ背景を内包）、`stat`（大きな数字）、`trend`（シェア推移レール）、`flow`（連番ステップ図）、`grid`（2×2 カード）、`ba`（ビフォー/アフター表）、`center`（中央寄せ引用）、`refs`（参考）、`dense`（手順スライド用。`pre` と引用を詰めて行数を稼ぐ）、`split`（右グラデパネル。併用可、例：`_class: refs split`）、`pair`（本文＋右の図/QR。広い図は `pair wide`）。複数クラスは半角スペース区切り。
-- **コード表示**：`code`（インライン＝薄グレー地に濃紺）と `pre`（ブロック＝濃紺地に白抜き＝ターミナル風）をテーマ側で定義済み。default テーマの GitHub-markdown 由来 CSS に勝つため `!important` が必要（表・引用と同じ事情）。`pre` は「参加者がそのまま打つコマンド」に見えるので、**キー操作（`Shift + Tab` など）を `pre` で書かない**（打ち込むものと誤解される）。引用か太字で表す。
+- **コード表示**：`code`（インライン＝薄グレー地に濃紺）と `pre`（ブロック＝濃紺地に白抜き＝ターミナル風）をテーマ側で定義済み。default テーマの GitHub-markdown 由来 CSS に勝つため `!important` が必要（表・引用と同じ事情）。言語タグ付き（```` ```json ```` など）のシンタックスハイライトは、default テーマが明るい背景向けの `--color-prettylights-syntax-*` を当てて濃紺地で読めなくなるため、`pre` の中だけ暗い背景向けの値に差し替えてある。`pre` は「参加者がそのまま打つコマンド」に見えるので、**キー操作（`Shift + Tab` など）を `pre` で書かない**（打ち込むものと誤解される）。引用か太字で表す。
 - **`section.src` に表を置くときは注意**。`table{font-size:20px}` が `section.src{font-size:15px}` の継承に勝つため、テーマ側で `section.src table` を明示的に 15px に落としてある。同様の衝突は他のクラスでも起こりうる。
 - **図版は生レイアウト `<div>` を使わず、ネイティブ Markdown ＋ CSS で構築**：装飾した `<ol>`（flow）、`<ul>` グリッド、`<table>`。raw HTML が無効な環境でも描画される。**例外は `pair` の `.fig`**（`<p class="fig">` ＋ `<img>`）。QR・写真の右寄せキャプションは raw HTML が前提なので、`markdown.marp.html` が無効だと図が消える。
 - **ブランド埋め込み**：ロゴは `--logo-uri`（データ URI、`:root` で一度定義し `section` と `section.split` で再利用）。表紙背景は `section.lead` の背景にデータ URI で内包（半透明の紺ベールを重ねて白文字を可読化）。
