@@ -1,6 +1,6 @@
 ---
 name: tech-share-deck
-description: Tech Share リポジトリ（Singuralitylabs/tech-share）で、企画 Issue（`企画` ラベル）から Marp デッキ `decks/YYYYMMDD_<topic>.md` を作る手順。theme singularity のレイアウトクラス選択、表紙への企画 Issue URL、発表者ノートへの話すポイント転記、`体験会` ラベル時の定型スライド転記、規約チェックと PNG でのはみ出し確認までを一通り行う。「Issue #N からスライドを作って」「企画をデッキにして」「次の体験会の資料を作りたい」「#13 の企画でスライド起こして」など、このリポジトリで発表資料・スライド・デッキを新規に作る／企画に沿って作り直す依頼では、Issue 番号や「Marp」と明示されていなくても必ずこのスキルを使う。Google スライド用の .gslides.md や、テーマ CSS 自体の改修には使わない。
+description: "Tech Share リポジトリ（Singuralitylabs/tech-share）で、企画 Issue（`企画` ラベル）から Marp デッキ `decks/YYYYMMDD_<topic>.md` を作る手順。theme singularity のレイアウトクラス選択、表紙への企画 Issue URL、発表者ノートへの話すポイント転記、`体験会` ラベル時の定型スライド転記、規約チェックと PNG でのはみ出し確認までを一通り行う。「Issue #N からスライドを作って」「企画をデッキにして」「次の体験会の資料を作りたい」「#13 の企画でスライド起こして」など、このリポジトリで発表資料・スライド・デッキを新規に作る／企画に沿って作り直す依頼では、Issue 番号や「Marp」と明示されていなくても必ずこのスキルを使う。Google スライド用の .gslides.md や、テーマ CSS 自体の改修には使わない。"
 ---
 
 # Tech Share デッキ作成（企画 Issue → Marp）
@@ -15,7 +15,7 @@ description: Tech Share リポジトリ（Singuralitylabs/tech-share）で、企
 
 - 作業ディレクトリはリポジトリ直下（`.marprc.yml` を読ませるため）。
 - PNG 書き出しの前に `export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`。
-- スクリプトはこのスキルの `scripts/` にある（以下 `$SK=.claude/skills/tech-share-deck`）。
+- スクリプトはこのスキルの `scripts/` にある。以下のコマンドは先にシェルで `SK=.claude/skills/tech-share-deck` を実行してから使う。
 
 ## 1. 企画 Issue を読む
 

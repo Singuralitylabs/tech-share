@@ -107,4 +107,5 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 - 企画 Issue の「ひとことスライド文言案」を `##` の見出しに使い、各スライドは要点 3〜4 項目に圧縮、1 枚 1 メッセージ。
 - パートの見出しは `<!-- _header: 'PART 0X · ラベル' -->`、発表者ノート（企画 Issue の話すポイント）は各スライド末尾の `<!-- ... -->` コメントに置く。
 - 企画 Issue に `体験会` ラベルが付いているデッキは、`templates/` の定型スライド群（冒頭・末尾）の転記が必須（上記「体験会デッキの必須スライド」）。
+- `.claude/skills/tech-share-deck/` は企画 Issue → デッキ作成の手順スキル。体験会の定型スライド転記は `scripts/taikenkai_slides.py wrap <deck>`、規約チェックは `scripts/check_deck.py <deck> [--taikenkai]` で行える（手作業の転記・確認の代わりに使ってよい）。
 - `marp-slide` スキル（softaworks/agent-toolkit）は導入済みだが、雛形生成の補助であり、デザインは常に共有テーマ側で管理する。
