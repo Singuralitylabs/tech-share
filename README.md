@@ -187,6 +187,7 @@ npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.p
   | `dense` | 手順スライド用（`pre` と引用を詰めて行数を稼ぐ） |
   | `split` | 右側に青グラデパネル（PDF 3枚目） |
   | `pair` | 本文＋右の図/QR（広い図は `pair wide`） |
+  | `tk` | 体験会定型スライド専用（上寄せ・大きめの文字。前回の Google スライド資料に寄せる） |
 
   > `refs` と `src` は font-size が衝突します（両方付けると 18px になる）。出典スライドは **`src` 単独**で使ってください。
 

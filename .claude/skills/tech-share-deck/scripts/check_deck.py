@@ -2,10 +2,12 @@
 """Tech Share の Marp デッキが CLAUDE.md の規約を満たすかを検査する。
 
 使い方（リポジトリ直下で実行）:
-  python3 .claude/skills/tech-share-deck/scripts/check_deck.py decks/YYYYMMDD_topic.md [--taikenkai]
+  python3 .claude/skills/tech-share-deck/scripts/check_deck.py decks/YYYYMMDD_topic.md [--taikenkai] [--issue-file 本文.md]
 
 --taikenkai: 企画 Issue に `体験会` ラベルが付いているとき指定する。定型スライドの転記漏れを ERROR にする。
 指定しなくても、デッキに定型スライドが入っていれば転記内容を検査する。
+定型スライドの体験会名は、表紙の企画 Issue の「体験会名」欄と照合する（Issue 本文は gh で取得。
+gh が無い環境では Issue 本文を保存したファイルを --issue-file で渡す。どちらも無ければ WARN で照合を飛ばす）。
 
 ERROR は直すべき規約違反、WARN は目視で判断する候補。はみ出しはこのスクリプトでは分からないので、
 PNG 書き出しで必ず確認すること。終了コードは ERROR があれば 1。
@@ -15,7 +17,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from taikenkai_slides import template_body  # noqa: E402
+from taikenkai_slides import (  # noqa: E402
+    EVENT_DEFAULT, EVENT_SLIDE_RE, ISSUE_URL_RE, REPO, event_from_issue_body, template_body,
+)
+import subprocess  # noqa: E402
 
 ISSUE_URL = re.compile(r"企画 Issue：https://github\.com/Singuralitylabs/tech-share/issues/\d+")
 CLASS_RE = re.compile(r"<!--\s*_class:\s*([^>]*?)\s*-->")
@@ -87,6 +92,25 @@ def norm(text: str) -> str:
     return "\n".join(l.rstrip() for l in text.strip("\n").splitlines())
 
 
+def template_pattern(tmpl: str) -> re.Pattern:
+    """定型スライド1枚と照合する正規表現。体験会名の差し替え欄は、1枚の中で同じ名前なら任意の名前を許す。"""
+    if not EVENT_SLIDE_RE.search(tmpl):
+        return re.compile(re.escape(tmpl))
+    parts = [re.escape(p) for p in tmpl.split(EVENT_DEFAULT)]
+    out = parts[0]
+    for k, p in enumerate(parts[1:]):
+        out += (r"(?P<ev>[^\n]+?)" if k == 0 else r"(?P=ev)") + p
+    return re.compile(out)
+
+
+def same(text: str, tmpl: str, events: list[str] | None = None) -> bool:
+    """定型スライド1枚と一致するか。events を渡すと、差し替え欄の体験会名をそこへ集める（スライド間の一致検査用）。"""
+    m = template_pattern(tmpl).fullmatch(text)
+    if m and events is not None and "ev" in m.groupdict():
+        events.append(m.group("ev"))
+    return bool(m)
+
+
 def template_slides(kind: str) -> list[str]:
     body = template_body(kind)
     return [norm(s.text) for s in split_slides(body.splitlines(), 0)]
@@ -115,12 +139,32 @@ def check_front_matter(lines: list[str], path: Path) -> int:
     return end + 1
 
 
-def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
+def issue_event(deck_text: str, issue_file: str) -> tuple[str, str]:
+    """企画 Issue の「体験会名」欄を (値, 取得元) で返す。値が取れないときは ("", 照合できない理由)。"""
+    if issue_file:
+        value = event_from_issue_body(Path(issue_file).read_text(encoding="utf-8"))
+        return (value, issue_file) if value else ("", f"{issue_file} の「体験会名」欄が空")
+    m = ISSUE_URL_RE.search(deck_text)
+    if not m:
+        return "", "表紙に企画 Issue の URL がない"
+    try:
+        body = subprocess.run(
+            ["gh", "issue", "view", m.group(1), "--repo", REPO, "--json", "body", "-q", ".body"],
+            capture_output=True, text=True, check=True, timeout=30,
+        ).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+        return "", f"企画 Issue #{m.group(1)} を gh で取得できない"
+    value = event_from_issue_body(body)
+    return (value, f"企画 Issue #{m.group(1)}") if value else ("", f"企画 Issue #{m.group(1)} の「体験会名」欄が空")
+
+
+def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", issue_file: str = "") -> set[int]:
     """定型スライドを検査し、定型として扱ったスライドの index を返す。"""
     opening, closing = template_slides("opening"), template_slides("closing")
     texts = [norm(s.text) for s in slides]
-    present = any(t == opening[0] for t in texts[:3]) or any(
-        s.heading() == Slide(0, closing[0].splitlines()).heading() for s in slides[-len(closing):]
+    closing_head = Slide(0, closing[0].splitlines()).heading()
+    present = any(same(t, opening[0]) for t in texts[:3]) or any(
+        same(s.heading(), closing_head) for s in slides[-len(closing):]
     )
     if not present:
         if required:
@@ -128,6 +172,7 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
         return set()
 
     used: set[int] = set()
+    events: list[str] = []  # アンケート・ご支援スライドの体験会名。opening・closing を通して1種類であること
     # opening：表紙の直前に全枚・同順・同文
     lead_idx = next((i for i, s in enumerate(slides) if "lead" in " ".join(s.classes()).split()), None)
     if lead_idx is None:
@@ -135,7 +180,7 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
     if lead_idx != len(opening):
         err(f"表紙（_class: lead）の前のスライドが {lead_idx} 枚。opening 定型は {len(opening)} 枚（全枚を表紙の直前に置く）")
     for j, t in enumerate(opening):
-        if j < lead_idx and texts[j] == t:
+        if j < lead_idx and same(texts[j], t, events):
             used.add(j)
         else:
             s = slides[j] if j < len(slides) else None
@@ -159,11 +204,19 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
             if ok and texts[k] == t:
                 warn(f"L{s.start}: 差し替え欄「{s.heading()[3:]}」がテンプレートのまま。最新の内容に更新したか確認する")
         else:
-            ok = texts[k] == t
+            ok = same(texts[k], t, events)
         if ok:
             used.add(k)
         else:
             err(f"L{s.start}: closing 定型 {j + 1} 枚目（{tmpl_head[3:]}）が templates/taikenkai-closing.md と一致しない（文言改変・合体・欠落・`---` 漏れ）")
+    if len(set(events)) > 1:
+        err(f"体験会名が不一致：{sorted(set(events))}（アンケート・ご支援スライドの体験会名は opening・closing を通して同じ名前にそろえる）")
+    elif events:
+        expected, where = issue_event(deck_text, issue_file)
+        if expected and expected != events[0]:
+            err(f"体験会名「{events[0]}」が {where} の「体験会名」欄「{expected}」と違う（`taikenkai_slides.py wrap` で入れ直す）")
+        elif not expected:
+            warn(f"体験会名「{events[0]}」を企画 Issue と照合できなかった（{where}）。--issue-file で Issue 本文を渡すと照合する")
     return used
 
 
@@ -224,14 +277,19 @@ def check_slides(slides: list[Slide], taikenkai_idx: set[int]) -> None:
 
 
 def main() -> None:
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    argv = sys.argv[1:]
+    if "--issue-file" in argv[:-1]:
+        i = argv.index("--issue-file")
+        argv = argv[:i] + argv[i + 2:]
+    args = [a for a in argv if not a.startswith("--")]
     if len(args) != 1:
         sys.exit(__doc__)
     path = Path(args[0])
     lines = path.read_text(encoding="utf-8").splitlines()
     body_start = check_front_matter(lines, path)
     slides = split_slides(lines[body_start:], body_start)
-    tk = check_taikenkai(slides, "--taikenkai" in sys.argv)
+    issue_file = sys.argv[sys.argv.index("--issue-file") + 1] if "--issue-file" in sys.argv[:-1] else ""
+    tk = check_taikenkai(slides, "--taikenkai" in sys.argv, "\n".join(lines), issue_file)
     check_slides(slides, tk)
 
     print(f"{path}: {len(slides)} 枚（うち体験会定型 {len(tk)} 枚）")
