@@ -52,7 +52,7 @@ YouTube：https://www.youtube.com/@エンジニアチャンネル
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
-<!-- _class: tk -->
+<!-- _class: tk lg -->
 
 ## イベント開始前のご案内
 
