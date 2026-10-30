@@ -402,8 +402,9 @@ section.tkb blockquote{ font-size:36px; margin:22px 0; padding:20px 28px; }
 section.tkb{ display:flex; flex-direction:column; justify-content:flex-start; }
 section.tkb > *{ flex-shrink:0; }
 section.tkb > h2{ margin-bottom:auto; }
-section.tkb > :nth-of-type(1 of :not(h2,header,footer)){ margin-top:22px; }
-section.tkb > :nth-last-child(1 of :not(header,footer)){ margin-bottom:auto; }
+/* dense の p・pre などの margin 指定に負けないよう、クラスを重ねて詳細度を上げる */
+section.tkb.tkb > :nth-of-type(1 of :not(h2,header,footer)){ margin-top:22px; }
+section.tkb.tkb > :nth-last-child(1 of :not(header,footer)){ margin-bottom:auto; }
 section.tkb.grid > ul{ margin-top:24px; gap:24px; }
 section.tkb.grid > ul > li{ font-size:35px; padding:24px 28px; }
 section.tkb.grid > ul:has(> li:nth-child(3):last-child) > li{ padding:28px 26px 30px; }
