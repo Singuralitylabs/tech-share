@@ -33,7 +33,7 @@ lang: ja
 
 様々なSNSを通じてWeb技術のスキルアップに役立つ<br>情報を発信中！！
 
-| ![w:56](../assets/taikenkai/sns-x.jpeg) | ![w:120](../assets/taikenkai/sns-note.jpeg) | ![w:130](../assets/taikenkai/sns-youtube.jpeg) |
+| ![w:96](../assets/taikenkai/sns-x.jpeg) | ![w:210](../assets/taikenkai/sns-note.jpeg) | ![w:230](../assets/taikenkai/sns-youtube.jpeg) |
 |:---:|:---:|:---:|
 | イベント情報<br>スキルアップ情報 | Web/AI開発の<br>技術記事 | AI技術・GAS<br>動画配信 |
 
@@ -59,7 +59,7 @@ YouTube：https://www.youtube.com/@エンジニアチャンネル
 - 本体験会は録画いたしますのでご了承ください
 - 講師からの問いかけには、了解(👍)や挙手(✋)などのスタンプで応答のご協力をお願いいたします
 - 不明点や原因不明のエラーが出た場合、チャットでお気軽にご質問ください（エラー内容付きで）
-- 本内容はnoteやYouTubeでも公開しているので、ぜひご活用ください。
+- 本内容はnoteでも公開しているので、ぜひご活用ください。
 
 <!--
 開始直後に読む。録画の了承 → スタンプでの応答 → チャット質問（エラー内容付き）→ 公開先、の順。

@@ -325,6 +325,14 @@ section.tk{
   font-size:35px; line-height:1.5;
   padding:40px 64px 36px 46px;
 }
+/* ロゴを前回資料の大きさに（本文スライドの 40px より大きく） */
+section.tk{ background-size:68px 68px; background-position:top 22px right 26px; }
+section.tk.split{
+  background:
+    var(--logo-uri) no-repeat top 22px right 26px / 68px 68px,
+    linear-gradient(150deg, var(--navy), var(--cyan)) no-repeat top right / 40% 100%,
+    #fff;
+}
 section.tk h2{ font-size:50px; font-weight:500; margin:0 0 26px; padding-bottom:14px; }
 section.tk h2::after{ left:-46px; width:900px; height:3px; }
 section.tk ul{ margin:8px 0; }
@@ -342,15 +350,21 @@ section.tk.pair.wide h2{ margin-right:-536px; }
 section.tk.pair.wide .fig{ width:530px; }
 section.tk.pair .fig img{ max-height:62%; }
 section.tk.pair.wide .fig img{ max-height:80%; }
+/* 箇条書きだけのスライド（月次活動・会費・注意）：下が空くので文字と行間を広げる */
+section.tk.big{ font-size:44px; }
+section.tk.big ul{ margin-top:16px; }
+section.tk.big li{ margin:28px 0; }
+section.tk.big ul ul{ margin:6px 0; }
+section.tk.big ul ul li{ margin:12px 0; }
 /* 中央に大きく置く一文（「シンギュラリティ・ラボとは」「最後に」） */
 section.tk.msg p{ text-align:center; font-size:46px; line-height:1.75; color:var(--ink); margin:30px 0 18px; }
 section.tk.msg p:has(> img:only-child){ margin-top:0; }
 /* SNS 表：1行目＝ロゴ、2行目＝ラベル。見出し行の濃紺塗りを外す */
-section.tk.sns table{ width:auto; margin:6px auto 12px 0; font-size:26px; }
-section.tk.sns table th{ background:#fff !important; border-color:var(--ink); text-align:center; padding:10px 34px; }
-section.tk.sns table td{ border-color:var(--ink); text-align:center; line-height:1.35; padding:8px 26px; color:var(--ink) !important; }
+section.tk.sns table{ width:90%; margin:10px auto 18px 0; font-size:34px; }
+section.tk.sns table th{ background:#fff !important; border-color:var(--ink); text-align:center; padding:14px 60px; }
+section.tk.sns table td{ border-color:var(--ink); text-align:center; line-height:1.35; padding:12px 40px; color:var(--ink) !important; }
 section.tk.sns table tr:nth-child(2n){ background:#fff !important; }
-section.tk.sns ul{ list-style:none; padding-left:0; font-size:18px; line-height:1.4; }
+section.tk.sns ul{ list-style:none; padding-left:0; font-size:28px; line-height:1.45; }
 section.tk.sns li{ margin:2px 0; }
 /* 小さい QR を横に並べる表（Sinlab Study / Knowledge）。罫線・塗りを消してキャプションだけ残す */
 section.tk:not(.sns) table:has(img){ width:auto; margin:6px 0; font-size:18px; border:none; }
