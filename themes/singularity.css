@@ -360,6 +360,12 @@ section.tk.big ul ul li{ margin:12px 0; }
 section.tk.lg{ font-size:40px; }
 section.tk.lg ul{ margin-top:14px; }
 section.tk.lg li{ margin:28px 0; }
+/* 右に図がある pair と併用するときは本文幅が狭いので少し控えめに（今後のイベント・どんなコミュニティなの？） */
+section.tk.pair.lg{ font-size:37px; }
+section.tk.pair.lg li{ margin:38px 0; }
+section.tk.pair.lg p{ margin:0 0 34px; }
+/* アンケート：説明文と QR の間を空ける */
+section.tk.lg:not(.pair) p:has(> img:only-child){ margin-top:24px; }
 /* 中央に大きく置く一文（「シンギュラリティ・ラボとは」「最後に」） */
 section.tk.msg p{ text-align:center; font-size:46px; line-height:1.75; color:var(--ink); margin:30px 0 18px; }
 section.tk.msg p:has(> img:only-child){ margin-top:0; }
