@@ -2,10 +2,12 @@
 """Tech Share の Marp デッキが CLAUDE.md の規約を満たすかを検査する。
 
 使い方（リポジトリ直下で実行）:
-  python3 .claude/skills/tech-share-deck/scripts/check_deck.py decks/YYYYMMDD_topic.md [--taikenkai]
+  python3 .claude/skills/tech-share-deck/scripts/check_deck.py decks/YYYYMMDD_topic.md [--taikenkai] [--issue-file 本文.md]
 
 --taikenkai: 企画 Issue に `体験会` ラベルが付いているとき指定する。定型スライドの転記漏れを ERROR にする。
 指定しなくても、デッキに定型スライドが入っていれば転記内容を検査する。
+定型スライドの体験会名は、表紙の企画 Issue の「体験会名」欄と照合する（Issue 本文は gh で取得。
+gh が無い環境では Issue 本文を保存したファイルを --issue-file で渡す。どちらも無ければ WARN で照合を飛ばす）。
 
 ERROR は直すべき規約違反、WARN は目視で判断する候補。はみ出しはこのスクリプトでは分からないので、
 PNG 書き出しで必ず確認すること。終了コードは ERROR があれば 1。
@@ -15,7 +17,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from taikenkai_slides import EVENT_DEFAULT, EVENT_SLIDE_RE, template_body  # noqa: E402
+from taikenkai_slides import (  # noqa: E402
+    EVENT_DEFAULT, EVENT_SLIDE_RE, ISSUE_URL_RE, REPO, event_from_issue_body, template_body,
+)
+import subprocess  # noqa: E402
 
 ISSUE_URL = re.compile(r"企画 Issue：https://github\.com/Singuralitylabs/tech-share/issues/\d+")
 CLASS_RE = re.compile(r"<!--\s*_class:\s*([^>]*?)\s*-->")
@@ -134,7 +139,26 @@ def check_front_matter(lines: list[str], path: Path) -> int:
     return end + 1
 
 
-def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
+def issue_event(deck_text: str, issue_file: str) -> tuple[str, str]:
+    """企画 Issue の「体験会名」欄を (値, 取得元) で返す。値が取れないときは ("", 照合できない理由)。"""
+    if issue_file:
+        value = event_from_issue_body(Path(issue_file).read_text(encoding="utf-8"))
+        return (value, issue_file) if value else ("", f"{issue_file} の「体験会名」欄が空")
+    m = ISSUE_URL_RE.search(deck_text)
+    if not m:
+        return "", "表紙に企画 Issue の URL がない"
+    try:
+        body = subprocess.run(
+            ["gh", "issue", "view", m.group(1), "--repo", REPO, "--json", "body", "-q", ".body"],
+            capture_output=True, text=True, check=True, timeout=30,
+        ).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+        return "", f"企画 Issue #{m.group(1)} を gh で取得できない"
+    value = event_from_issue_body(body)
+    return (value, f"企画 Issue #{m.group(1)}") if value else ("", f"企画 Issue #{m.group(1)} の「体験会名」欄が空")
+
+
+def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", issue_file: str = "") -> set[int]:
     """定型スライドを検査し、定型として扱ったスライドの index を返す。"""
     opening, closing = template_slides("opening"), template_slides("closing")
     texts = [norm(s.text) for s in slides]
@@ -187,6 +211,12 @@ def check_taikenkai(slides: list[Slide], required: bool) -> set[int]:
             err(f"L{s.start}: closing 定型 {j + 1} 枚目（{tmpl_head[3:]}）が templates/taikenkai-closing.md と一致しない（文言改変・合体・欠落・`---` 漏れ）")
     if len(set(events)) > 1:
         err(f"体験会名が不一致：{sorted(set(events))}（アンケート・ご支援スライドの体験会名は opening・closing を通して同じ名前にそろえる）")
+    elif events:
+        expected, where = issue_event(deck_text, issue_file)
+        if expected and expected != events[0]:
+            err(f"体験会名「{events[0]}」が {where} の「体験会名」欄「{expected}」と違う（`taikenkai_slides.py wrap` で入れ直す）")
+        elif not expected:
+            warn(f"体験会名「{events[0]}」を企画 Issue と照合できなかった（{where}）。--issue-file で Issue 本文を渡すと照合する")
     return used
 
 
@@ -247,14 +277,19 @@ def check_slides(slides: list[Slide], taikenkai_idx: set[int]) -> None:
 
 
 def main() -> None:
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    argv = sys.argv[1:]
+    if "--issue-file" in argv[:-1]:
+        i = argv.index("--issue-file")
+        argv = argv[:i] + argv[i + 2:]
+    args = [a for a in argv if not a.startswith("--")]
     if len(args) != 1:
         sys.exit(__doc__)
     path = Path(args[0])
     lines = path.read_text(encoding="utf-8").splitlines()
     body_start = check_front_matter(lines, path)
     slides = split_slides(lines[body_start:], body_start)
-    tk = check_taikenkai(slides, "--taikenkai" in sys.argv)
+    issue_file = sys.argv[sys.argv.index("--issue-file") + 1] if "--issue-file" in sys.argv[:-1] else ""
+    tk = check_taikenkai(slides, "--taikenkai" in sys.argv, "\n".join(lines), issue_file)
     check_slides(slides, tk)
 
     print(f"{path}: {len(slides)} 枚（うち体験会定型 {len(tk)} 枚）")

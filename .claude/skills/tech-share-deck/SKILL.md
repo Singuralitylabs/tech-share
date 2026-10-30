@@ -83,10 +83,13 @@ footer: '<タイトル（短め）> ｜ シンギュラリティ・ラボ'
 `templates/taikenkai-opening.md` を表紙の直前、`templates/taikenkai-closing.md` をデッキの最後（APPENDIX も含めた全スライドの後）に、全枚・順序どおり・文言そのままで入れる。手で写すと継ぎ目の `---` 漏れや1文字の改変が起きやすいので、スクリプトで入れる：
 
 ```bash
-python3 $SK/scripts/taikenkai_slides.py wrap decks/YYYYMMDD_<topic>.md --event <体験会名>
+python3 $SK/scripts/taikenkai_slides.py wrap decks/YYYYMMDD_<topic>.md
 ```
 
-`--event` はアンケート・ご支援スライドの見出しと導入文にある体験会名（既定「AI駆動開発」）を差し替える（例：`--event Web技術`）。AI駆動開発の回なら省略してよい。
+アンケート・ご支援スライドの見出しと導入文にある体験会名（テンプレートでは「AI駆動開発」）は、**企画 Issue 本文「基本情報」表の「体験会名」欄**から自動で入る。スクリプトは表紙コメントの企画 Issue URL から番号を読み、`gh issue view` で本文を取る（手順 3 で表紙を書いてから実行する）。
+
+- gh が使えない環境（クラウドのセッションなど）では、手順 1 で `issue_read` した本文をスクラッチパッドにファイルで保存し、`--issue-file <そのファイル>` を付ける。
+- 「体験会名」欄が空欄・記入例のままだとエラーで止まる（既定名のまま別の回に出るのを防ぐため）。Issue への記入をユーザーに頼むか、了承を得て値を `--event <体験会名>` で直接渡す。
 
 （front matter と転記ガイドのコメントは除外され、継ぎ目の `---` とスライドごとの `_paginate: skip` / `_footer: ''` もそのまま入る。）
 
@@ -94,7 +97,7 @@ python3 $SK/scripts/taikenkai_slides.py wrap decks/YYYYMMDD_<topic>.md --event <
 
 1. 「今後のイベントのお知らせ」— 小見出し（シリーズ名）と開催日程（3〜4件が目安）
 2. 「○月の主なシンラボ活動の紹介」— 見出しの月と箇条書き
-3. 体験会名（`--event` で入れたもの）— opening・closing のアンケート・ご支援スライド全部（スライド間も）で同じ名前になっていること
+3. 体験会名（Issue の「体験会名」欄から入ったもの）— opening・closing のアンケート・ご支援スライド全部（スライド間も）で同じ名前になっていること。Issue 側の欄を後から直したら、デッキも合わせる
 
 定型スライドの `_class` にある `tk`（体験会専用クラス）や、「最後に」の後の空白の青スライド・付録「Sinlab Knowledge」はテンプレートどおりに残す（前回の体験会資料に合わせた構成）。
 
@@ -103,8 +106,10 @@ python3 $SK/scripts/taikenkai_slides.py wrap decks/YYYYMMDD_<topic>.md --event <
 ## 5. 規約チェック
 
 ```bash
-python3 $SK/scripts/check_deck.py decks/YYYYMMDD_<topic>.md [--taikenkai]
+python3 $SK/scripts/check_deck.py decks/YYYYMMDD_<topic>.md [--taikenkai] [--issue-file <Issue 本文>]
 ```
+
+体験会デッキでは、スライドの体験会名を企画 Issue の「体験会名」欄と照合する（gh で取得。gh が無ければ `--issue-file` で本文を渡す。どちらも無いと WARN で照合を飛ばす）。
 
 - `ERROR` は全部直す（front matter、表紙の Issue URL、`_class` 重複、定型スライドの欠落・改変・合体など）。
 - `WARN` は候補。太字崩れ・ノート欠落・`split` の項目数などを見て、直すか判断する。差し替え欄がテンプレートのままという WARN は、ユーザーに確認済みなら残してよい。

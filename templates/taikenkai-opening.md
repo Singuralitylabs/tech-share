@@ -20,7 +20,7 @@ lang: ja
 - この front matter はこのファイル単体をプレビューするためのもの。デッキへは転記しない。
 - 末尾用の定型スライドは `templates/taikenkai-closing.md`（別ファイル）。
 - 差し替え欄（転記時に改変してよい箇所）：「ご支援のお願い」の見出しと導入文にある体験会名「AI駆動開発」だけ
-  （例：「Web技術」。closing のアンケート・ご支援スライドと同じ名前にそろえる。`taikenkai_slides.py wrap --event 名前` で一括で入る）。
+  （例：「Web技術」。closing のアンケート・ご支援スライドと同じ名前にそろえる。値は企画 Issue「基本情報」表の「体験会名」欄に書き、`taikenkai_slides.py wrap` がそこから読み取って一括で入れる）。
   それ以外の文言・画像・順序は改変禁止。日程・月次活動の差し替えは closing 側。
 - 各スライドの `_class` に付いている `tk` は、前回の体験会資料（Google スライド）の見た目に寄せる体験会専用クラス。外さない。
 -->
@@ -31,7 +31,7 @@ lang: ja
 
 ## 過去体験会の情報は各種SNSでも公開中です
 
-様々なSNSを通じてプログラミングのスキルアップに役立つ<br>情報を発信中！！
+様々なSNSを通じてWeb技術のスキルアップに役立つ<br>情報を発信中！！
 
 | ![w:56](../assets/taikenkai/sns-x.jpeg) | ![w:120](../assets/taikenkai/sns-note.jpeg) | ![w:130](../assets/taikenkai/sns-youtube.jpeg) |
 |:---:|:---:|:---:|
