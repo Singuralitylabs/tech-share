@@ -370,3 +370,44 @@ section.tk.sns li{ margin:2px 0; }
 section.tk:not(.sns) table:has(img){ width:auto; margin:6px 0; font-size:18px; border:none; }
 section.tk:not(.sns) table:has(img) th, section.tk:not(.sns) table:has(img) td{ border:none; background:transparent !important; color:var(--body) !important; text-align:center; padding:2px 16px; font-weight:400; }
 section.tk:not(.sns) table:has(img) tr{ background:transparent !important; border:none; }
+
+/* ---------- TKB (体験会デッキの本編スライド) ----------
+   定型スライド（tk）と並べたときに見た目がそろうよう、ロゴの大きさ・見出しの位置と大きさ・
+   左端からの見出し罫線・上寄せを tk に合わせる。本文の文字は、図版クラスと併用できるよう
+   tk（35px）より控えめにしてある。tk と違い、本編のレイアウトクラスと併用する前提：
+   `tkb` / `tkb center` / `tkb grid` / `tkb flow` / `tkb ba` / `tkb dense`。
+   _class はスライドごとに上書きされる（front matter の class と合成されない）ので、本編の各スライドに付ける。 */
+section.tkb{
+  place-content:start;
+  font-size:30px; line-height:1.55;
+  padding:40px 64px 40px 46px;
+  background-size:68px 68px; background-position:top 22px right 26px;
+}
+section.tkb h2{ font-size:44px; font-weight:500; margin:0 0 22px; padding-bottom:14px; padding-right:60px; }
+section.tkb h2::after{ left:-46px; width:900px; height:3px; }
+/* PART ラベル（_header）は見出しと重ならないよう、見出しの上に小さく置く */
+section.tkb header{ top:12px; left:46px; }
+section.tkb ul, section.tkb ol{ margin:10px 0; }
+section.tkb li{ margin:8px 0; }
+section.tkb p{ margin:0 0 12px; }
+section.tkb blockquote{ font-size:30px; margin:16px 0; padding:16px 24px; }
+/* center：見出しは上端に固定し、残りを縦中央へ */
+section.tkb.center{ display:flex; flex-direction:column; justify-content:flex-start; }
+section.tkb.center > h2{ margin-bottom:auto; }
+section.tkb.center > :nth-last-child(1 of :not(header,footer)){ margin-bottom:auto; }
+section.tkb.grid > ul{ margin-top:14px; gap:18px; }
+section.tkb.grid > ul > li{ font-size:30px; padding:16px 22px; }
+section.tkb.grid ul ul li{ font-size:23px; margin:4px 0; }
+section.tkb.flow > ol{ margin-top:24px; }
+section.tkb.flow > ol > li{ font-size:24px; padding:22px 18px; }
+section.tkb.flow > ol > li strong{ font-size:30px; }
+section.tkb.flow > ol > li em{ font-size:18px; }
+section.tkb.ba table{ margin:10px 0 14px; }
+section.tkb.ba table th{ font-size:27px; }
+section.tkb.ba table td{ font-size:28px; padding:10px 16px; }
+section.tkb.dense h2{ margin-bottom:14px; }
+section.tkb.dense pre{ margin:8px 0; padding:10px 18px !important; }
+section.tkb.dense pre code{ font-size:21px; }
+section.tkb.dense p{ margin:8px 0 4px; }
+section.tkb.dense li{ margin:4px 0; }
+section.tkb.dense blockquote{ font-size:26px; margin:10px 0; padding:10px 20px; }
