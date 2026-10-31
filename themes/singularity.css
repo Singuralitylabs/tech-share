@@ -356,6 +356,16 @@ section.tk.big ul{ margin-top:16px; }
 section.tk.big li{ margin:28px 0; }
 section.tk.big ul ul{ margin:6px 0; }
 section.tk.big ul ul li{ margin:12px 0; }
+/* 文章の長い箇条書きだけのスライド（開始前のご案内）：big では溢れるので一段階小さく */
+section.tk.lg{ font-size:40px; }
+section.tk.lg ul{ margin-top:14px; }
+section.tk.lg li{ margin:28px 0; }
+/* 右に図がある pair と併用するときは本文幅が狭いので少し控えめに（今後のイベント・どんなコミュニティなの？） */
+section.tk.pair.lg{ font-size:37px; }
+section.tk.pair.lg li{ margin:38px 0; }
+section.tk.pair.lg p{ margin:0 0 34px; }
+/* アンケート：説明文と QR の間を空ける */
+section.tk.lg:not(.pair) p:has(> img:only-child){ margin-top:24px; }
 /* 中央に大きく置く一文（「シンギュラリティ・ラボとは」「最後に」） */
 section.tk.msg p{ text-align:center; font-size:46px; line-height:1.75; color:var(--ink); margin:30px 0 18px; }
 section.tk.msg p:has(> img:only-child){ margin-top:0; }
@@ -370,3 +380,65 @@ section.tk.sns li{ margin:2px 0; }
 section.tk:not(.sns) table:has(img){ width:auto; margin:6px 0; font-size:18px; border:none; }
 section.tk:not(.sns) table:has(img) th, section.tk:not(.sns) table:has(img) td{ border:none; background:transparent !important; color:var(--body) !important; text-align:center; padding:2px 16px; font-weight:400; }
 section.tk:not(.sns) table:has(img) tr{ background:transparent !important; border:none; }
+
+/* ---------- TKB (体験会デッキの本編スライド) ----------
+   定型スライド（tk）と並べたときに見た目がそろうよう、ロゴの大きさ・見出しの位置と大きさ・
+   左端からの見出し罫線・上寄せを tk に合わせる。本文の文字は、図版クラスと併用できるよう
+   tk（35px）より控えめにしてある。tk と違い、本編のレイアウトクラスと併用する前提：
+   `tkb` / `tkb center` / `tkb grid` / `tkb flow` / `tkb ba` / `tkb dense`。
+   _class はスライドごとに上書きされる（front matter の class と合成されない）ので、本編の各スライドに付ける。 */
+section.tkb{
+  place-content:start;
+  font-size:37px; line-height:1.55;
+  padding:40px 64px 48px 46px;
+  background-size:68px 68px; background-position:top 22px right 26px;
+}
+section.tkb h2{ font-size:44px; font-weight:500; margin:0 0 22px; padding-bottom:14px; padding-right:60px; }
+section.tkb h2::after{ left:-46px; width:900px; height:3px; }
+/* PART ラベル（_header）は見出しと重ならないよう、見出しの上に小さく置く */
+section.tkb header{ top:10px; left:46px; font-size:18px; }
+/* 文字は最低 18px（フッター・ページ番号も） */
+section.tkb footer{ font-size:18px; bottom:14px; }
+section.tkb::after{ font-size:18px; }
+section.tkb ul, section.tkb ol{ margin:10px 0; }
+section.tkb li{ margin:14px 0; }
+section.tkb p{ margin:0 0 12px; }
+section.tkb blockquote{ font-size:36px; margin:22px 0; padding:20px 28px; }
+/* 見出しは上端に固定し、残りは見出しの下の余白の中で縦中央に置く（上下の空きを均等にする） */
+section.tkb{ display:flex; flex-direction:column; justify-content:flex-start; }
+section.tkb > *{ flex-shrink:0; }
+section.tkb > h2{ margin-bottom:auto; }
+/* dense の p・pre などの margin 指定に負けないよう、クラスを重ねて詳細度を上げる */
+section.tkb.tkb > :nth-of-type(1 of :not(h2,header,footer)){ margin-top:22px; }
+section.tkb.tkb > :nth-last-child(1 of :not(header,footer)){ margin-bottom:auto; }
+section.tkb.grid > ul{ margin-top:24px; gap:24px; }
+section.tkb.grid > ul > li{ font-size:35px; padding:24px 28px; }
+section.tkb.grid > ul:has(> li:nth-child(3):last-child) > li{ padding:28px 26px 30px; }
+section.tkb.grid ul ul{ margin-top:12px; }
+section.tkb.grid ul ul li{ font-size:29px; margin:8px 0; line-height:1.5; }
+section.tkb.flow > ol{ margin-top:24px; }
+section.tkb.flow > ol > li{ font-size:24px; padding:22px 18px; }
+section.tkb.flow > ol > li strong{ font-size:30px; }
+section.tkb.flow > ol > li em{ font-size:18px; }
+section.tkb.ba table{ display:table; width:100%; margin:10px 0 14px; }
+section.tkb.ba table th{ font-size:32px; padding:16px 20px; }
+section.tkb.ba table td{ font-size:32px; padding:16px 20px; }
+section.tkb.dense{ font-size:31px; }
+section.tkb.dense h2{ margin-bottom:auto; }
+section.tkb.dense pre{ margin:10px 0; padding:14px 22px !important; }
+section.tkb.dense pre code{ font-size:25px; }
+/* 行数の多いコード（SKILL.md の全文など）を載せるスライド用 */
+section.tkb.long pre code{ font-size:19px; line-height:1.5; }
+section.tkb.long pre{ padding:12px 22px !important; }
+section.tkb.dense p{ margin:12px 0 4px; }
+section.tkb.dense li{ margin:6px 0; }
+section.tkb.dense blockquote{ font-size:28px; margin:14px 0; padding:14px 22px; }
+
+/* ---------- LEAD TKT (体験会デッキの表紙) ----------
+   前回の体験会資料の表紙に合わせ、すべて中央寄せ。`_class: lead tkt` で使う。
+   # 見出し＝「<体験会名> 体験会」（固定）、<p class="sub">＝その回のテーマ、<p class="org">＝団体名。 */
+section.lead.tkt{ align-items:center; text-align:center; padding-bottom:120px; }
+section.lead.tkt h1{ font-weight:500; font-size:96px; line-height:1.3; margin:0 0 6px; }
+section.lead.tkt .sub{ font-size:64px; font-weight:500; color:#fff; margin:0; }
+section.lead.tkt .org{ left:0; right:0; bottom:64px; font-size:42px; font-weight:500; letter-spacing:.04em; }
+section.lead.tkt .org::before{ display:none; }
