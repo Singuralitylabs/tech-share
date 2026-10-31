@@ -5,8 +5,10 @@
   python3 .claude/skills/tech-share-deck/scripts/check_deck.py decks/YYYYMMDD_topic.md [--taikenkai] [--issue-file 本文.md]
 
 --taikenkai: 企画 Issue に `体験会` ラベルが付いているとき指定する。定型スライドの転記漏れを ERROR にする。
+また、表紙が `lead tkt`（`# <体験会名> 体験会` ＋ `<p class="sub">`）でない、本編スライドに `tkb` が無い、
+`tkb` と併用すると崩れるクラスを使っている、`tkb` で項目が多すぎる、を WARN にする。
 指定しなくても、デッキに定型スライドが入っていれば転記内容を検査する。
-定型スライドの体験会名は、表紙の企画 Issue の「体験会名」欄と照合する（Issue 本文は gh で取得。
+定型スライドと表紙（`lead tkt`）の体験会名は、表紙の企画 Issue の「体験会名」欄と照合する（Issue 本文は gh で取得。
 gh が無い環境では Issue 本文を保存したファイルを --issue-file で渡す。どちらも無ければ WARN で照合を飛ばす）。
 
 ERROR は直すべき規約違反、WARN は目視で判断する候補。はみ出しはこのスクリプトでは分からないので、
@@ -18,7 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from taikenkai_slides import (  # noqa: E402
-    EVENT_DEFAULT, EVENT_SLIDE_RE, ISSUE_URL_RE, REPO, event_from_issue_body, template_body,
+    COVER_TITLE_RE, EVENT_DEFAULT, EVENT_SLIDE_RE, ISSUE_URL_RE, REPO, event_from_issue_body, template_body,
 )
 import subprocess  # noqa: E402
 
@@ -28,6 +30,10 @@ DIRECTIVE_RE = re.compile(r"^<!--\s*_?\w+:.*-->$")
 # CLAUDE.md「日本語で **太字** が効かないパターン」の洗い出し用 grep から、直後が句読点・約物のもの（問題ない）を除いた版
 BOLD_RE = re.compile(r"[\"」』）]\*\*[^ 　、。，．！？：；!?:;）」』\s]")
 KEYOP_RE = re.compile(r"\b(Shift|Ctrl|Cmd|Command|Alt|Option|Esc|Enter|Tab)\s*\+", re.I)
+# tkb（体験会デッキの本編）と併用すると崩れる／未対応のクラス（references/layouts.md「tkb」節）
+TKB_BROKEN = ("trend", "pair", "split", "refs", "src", "lead", "tk")
+# tkb を付けずにそのまま使う本編スライド（APPENDIX の出典・注記）
+TKB_EXEMPT = ("src", "refs", "split")
 REPLACEABLE = (re.compile(r"^## 今後のイベントのお知らせ$"), re.compile(r"^## (\d{1,2}|○)月の主なシンラボ活動の紹介$"))
 
 errors: list[str] = []
@@ -209,15 +215,86 @@ def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", is
             used.add(k)
         else:
             err(f"L{s.start}: closing 定型 {j + 1} 枚目（{tmpl_head[3:]}）が templates/taikenkai-closing.md と一致しない（文言改変・合体・欠落・`---` 漏れ）")
+    cover = check_cover(slides[lead_idx], required) if lead_idx < len(slides) else None
     if len(set(events)) > 1:
         err(f"体験会名が不一致：{sorted(set(events))}（アンケート・ご支援スライドの体験会名は opening・closing を通して同じ名前にそろえる）")
-    elif events:
+    elif events and cover and cover[1] != events[0]:
+        err(f"L{cover[0]}: 表紙の体験会名「{cover[1]}」が定型スライドの「{events[0]}」と違う（表紙は `# <体験会名> 体験会`。同じ名前にそろえる）")
+    elif events or cover:
+        name = events[0] if events else cover[1]
         expected, where = issue_event(deck_text, issue_file)
-        if expected and expected != events[0]:
-            err(f"体験会名「{events[0]}」が {where} の「体験会名」欄「{expected}」と違う（`taikenkai_slides.py wrap` で入れ直す）")
+        if expected and expected != name:
+            err(f"体験会名「{name}」が {where} の「体験会名」欄「{expected}」と違う（`taikenkai_slides.py wrap` で入れ直すか、表紙・定型スライドを直す）")
         elif not expected:
-            warn(f"体験会名「{events[0]}」を企画 Issue と照合できなかった（{where}）。--issue-file で Issue 本文を渡すと照合する")
+            warn(f"体験会名「{name}」を企画 Issue と照合できなかった（{where}）。--issue-file で Issue 本文を渡すと照合する")
+    if required:
+        check_tkb(slides[lead_idx + 1:max(base, lead_idx + 1)])
     return used
+
+
+def check_cover(lead: Slide, required: bool) -> tuple[int, str] | None:
+    """体験会デッキの表紙（lead tkt）を検査し、見出しから読んだ (行番号, 体験会名) を返す。読めなければ None。"""
+    names = " ".join(lead.classes()).split()
+    if "tkt" not in names:
+        if required:
+            warn(f"L{lead.start}: 体験会デッキの表紙が `lead tkt` ではない（`<!-- _class: lead tkt -->` ＋ `# <体験会名> 体験会` ＋ `<p class=\"sub\">その回のテーマ</p>`）")
+        return None
+    visible = lead.visible_lines()
+    h1 = next((l for l in visible if l.startswith("# ")), "")
+    ln = lead.start + lead.lines.index(h1) if h1 else lead.start
+    m = COVER_TITLE_RE.match(h1)
+    if not m or not m.group(1):
+        warn(f"L{ln}: 表紙（lead tkt）の見出しが `# <体験会名> 体験会` の形ではない: {h1 or '（見出しなし）'}")
+        m = None
+    if not any('class="sub"' in l for l in visible):
+        warn(f"L{lead.start}: 表紙（lead tkt）に `<p class=\"sub\">その回のテーマ</p>` がない")
+    if any('class="kicker"' in l for l in visible):
+        warn(f"L{lead.start}: 表紙（lead tkt）に kicker がある。体験会デッキの表紙には日付の kicker を付けない")
+    return (ln, m.group(1)) if m else None
+
+
+def check_tkb(main: list[Slide]) -> None:
+    """体験会デッキの本編スライド（表紙と closing 定型の間）が tkb で書かれているか、tkb で入りきる量かを見る。"""
+    missing = []
+    for s in main:
+        names = " ".join(s.classes()).split()
+        if "tkb" not in names:
+            if not any(c in names for c in TKB_EXEMPT):
+                missing.append(f"L{s.start}")
+            continue
+        broken = [c for c in TKB_BROKEN if c in names]
+        if broken:
+            warn(f"L{s.start}: tkb と {' / '.join(broken)} は併用できない（レイアウトが崩れる）。references/layouts.md の tkb 節を参照")
+        vis = s.visible_lines()
+        top = sum(1 for l in vis if re.match(r"^([-*]|\d+\.) ", l))
+        if "grid" in names:
+            cards, subs = [], 0
+            for l in vis:
+                if re.match(r"^[-*] ", l):
+                    cards.append(0)
+                elif cards and re.match(r"^\s+[-*] ", l):
+                    cards[-1] += 1
+            if len(cards) == 4 and max(cards) > 2:
+                warn(f"L{s.start}: tkb grid で 4 枚のカードに説明が {max(cards)} 行ある（4 枚なら各 2 行まで。3 行以上は 3 枚にする）")
+            elif len(cards) <= 3 and cards and max(cards) > 3:
+                warn(f"L{s.start}: tkb grid のカードに説明が {max(cards)} 行ある（3 枚なら各 3 行まで）")
+        elif "flow" in names:
+            if top > 4:
+                warn(f"L{s.start}: tkb flow のステップが {top} 個（4 個まで。5 個だとステップ名が折り返す）")
+        elif "ba" in names:
+            rows = sum(1 for l in vis if l.startswith("|")) - 2
+            if rows > 4 or (rows == 4 and top > 1):
+                warn(f"L{s.start}: tkb ba が表 {rows} 行＋補足 {top} 個（表 4 行＋補足 1 個まで）")
+        elif "dense" in names:
+            fences = sum(1 for l in vis if l.lstrip().startswith("```")) // 2
+            if fences > 3:
+                warn(f"L{s.start}: tkb dense にコードブロックが {fences} 個（ラベル付きで 3 個まで）")
+        elif not names or names == ["tkb"] or "center" in names:
+            quotes = sum(1 for l in vis if l.startswith(">"))
+            if top + quotes > 6:
+                warn(f"L{s.start}: tkb の本文が箇条書き {top} 個＋引用 {quotes} 行（合わせて 6 つまで。箇条書き 5 個＋引用 1 行が上限）")
+    if missing:
+        warn(f"体験会デッキの本編スライドに `tkb` が無い：{', '.join(missing)}（本編の各スライドに `<!-- _class: tkb ... -->` を付ける。APPENDIX の src / refs split は除く）")
 
 
 def check_slides(slides: list[Slide], taikenkai_idx: set[int]) -> None:

@@ -3,7 +3,7 @@
 各スライドは `<!-- _class: ... -->` でレイアウトを選ぶ。クラスは1行に半角スペース区切りでまとめる（2行書くと後勝ちで先の行が消える）。
 CSS は Markdown の**構造**（`ul` / `ol` / `table` / `h1`）に対して装飾を当てるので、下の書き方の形を崩すと見た目も崩れる。
 
-目次：共通の骨格 / lead / 本文（クラスなし） / stat / trend / flow / grid / ba / center / dense / pair / refs・split / src / 選び方
+目次：共通の骨格 / lead / 本文（クラスなし） / stat / trend / flow / grid / ba / center / dense / pair / refs・split / src / **体験会デッキ：lead tkt・tkb** / 選び方
 
 ---
 
@@ -255,11 +255,86 @@ mkdir ~/Desktop/techshare-demo
 
 ---
 
+## 体験会デッキ（`体験会` ラベル）：lead tkt・tkb
+
+体験会デッキは、前後の定型スライド（`tk`）と見た目をそろえるため、**表紙は `lead tkt`、本編の全スライドは `tkb`** を使う（`tk` は定型スライド専用で、本編には付けない）。適用例：`decks/20261102_skills.md`。
+
+### lead tkt（体験会の表紙）
+
+前回の体験会資料の表紙と同じ中央寄せ。**日付の kicker は付けない**。
+
+```markdown
+<!-- _class: lead tkt -->
+<!-- _paginate: false -->
+<!-- _footer: '' -->
+
+# 〇〇 体験会
+
+<p class="sub">その回のテーマ</p>
+
+<p class="org">シンギュラリティ・ラボ</p>
+
+<!--
+企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/N
+狙い：…
+-->
+```
+
+- 見出しは `# <体験会名> 体験会` で固定（例：`# AI駆動開発 体験会`、`# Web技術 体験会`）。体験会名は企画 Issue「基本情報」表の「体験会名」欄の値で、`taikenkai_slides.py wrap` が定型スライドと同じ名前で入れる（書く時点では `〇〇` のままでよい）。
+- `sub` にはその回のテーマ（Issue のタイトル案）を短く。1行に収まる長さにする。
+- コメントの**1行目**が `企画 Issue：URL` なのは通常の `lead` と同じ。
+
+### tkb（体験会の本編）
+
+ロゴ 68px・見出しの位置と大きさ・左端からの罫線を `tk` にそろえたクラス。見出しは上端、本文は残りの高さの中で縦中央に置かれる。本文 37px（`dense` は 31px）と大きいので、**通常デッキより入る量が少ない**。
+
+```markdown
+<!-- _class: tkb grid -->
+<!-- _header: 'PART 02 · スキルとは' -->
+
+## 置き場所は2つ。名前にはルールがある
+
+- **個人用**
+  - `~/.claude/skills/名前/SKILL.md`
+  - 自分のPCの全プロジェクトで使える
+- **プロジェクト用**
+  - `.claude/skills/名前/SKILL.md`
+  - そのフォルダだけ。Git でチームと共有できる
+- **名前のルール**
+  - フォルダ名がスキル名
+  - ファイル名は必ず **`SKILL.md`**（大文字）
+
+<!--
+発表者ノート
+-->
+```
+
+- **本編の各スライドに付ける**。`_class` は front matter の `class` と合成されないので、`<!-- _class: tkb -->`（クラスなし本文の代わり）、`<!-- _class: tkb grid -->` のようにスライドごとに1行で書く。OVERVIEW・CLOSING も含む。**APPENDIX の `src` / `refs split` だけは `tkb` を付けない**（下記のとおり崩れるため。通常デッキと同じ書き方で置く）。
+- PART ラベル（`_header`）は通常どおり。見出しの上に置かれる。
+
+項目数の目安（`decks/20261102_skills.md` と試し書きの PNG で確認した上限。超えると下が切れるか、文字が折り返して崩れる）：
+
+| 併用 | 入る量の目安 |
+|---|---|
+| `tkb`（本文） | 箇条書き 4〜5 個＋引用 1 行まで |
+| `tkb center` | 引用 1 行＋箇条書き 3 個 |
+| `tkb grid` | 4 枚なら各カードの説明 2 行まで、3 枚なら各 3 行まで（パスなど長い語は折り返すので 1 行と数えない） |
+| `tkb flow` | 4 ステップまで。ステップ名は 6〜7 文字以内（5 ステップだと折り返す） |
+| `tkb ba` | 表 4 行＋補足 1 個まで |
+| `tkb dense` | 太字ラベル＋コードブロックの組を 3 個まで（2 組＋箇条書き 3 個も可） |
+| `tkb dense long` | 15 行程度のコード（SKILL.md の全文など）。コードが 19px になる |
+| `tkb stat` | 通常どおり（大きな数字＋補足 2〜3 個） |
+
+- **`tkb` と併用できない**：`trend`（下端に押しやられる）、`pair` / `pair wide`（図の配置が崩れる）、`split` / `refs` / `src`（右パネルが消える・文字が小さくならない・本文が下端に寄る）。推移は `tkb flow` / `tkb ba` で、QR・図は本文の下に画像だけの段落（`![w:220](../assets/xxx.png)`）で置く。
+- `check_deck.py --taikenkai` が、表紙が `lead tkt` でない・本編に `tkb` が無い（`src` / `refs` / `split` のスライドは除く）・併用できないクラス・上の目安超え、を WARN で出す。
+
+---
+
 ## 選び方の目安
 
 | 企画 Issue 側の手がかり | クラス |
 |---|---|
-| 表紙 | `lead` |
+| 表紙 | `lead`（体験会デッキは `lead tkt`） |
 | ゴール・今日の流れ（OVERVIEW） | 本文 / `flow` / `grid` |
 | 「見せる数字」が1つの値 | `stat` |
 | 数値の推移（〇〇 → 〇〇 → 〇〇） | `trend` |
@@ -271,5 +346,7 @@ mkdir ~/Desktop/techshare-demo
 | QR・スクリーンショットを添える | `pair` / `pair wide` |
 | 注記・参考 | `refs split` / `refs` |
 | 出典URL一覧 | `src` |
+
+体験会デッキでは、表紙以外の本編スライドすべてに `tkb` を足す（例：`tkb grid`、クラスなし本文は `tkb`）。`trend` / `pair` / `split` / `refs` / `src` は `tkb` と併用できないので、上の「体験会デッキ」節の代わりの形にする（APPENDIX の `src` / `refs split` は `tkb` なしでそのまま使う）。
 
 同じクラスを連続させすぎない（本文 → `ba` → `center` のように変化をつける）一方、企画 Issue の「Marp 実装メモ」にクラスの指定があればそちらを優先する。
