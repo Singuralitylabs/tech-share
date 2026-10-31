@@ -23,6 +23,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 デザインの元になった社内フォーマット（`スライドフォーマット.pdf`）は、`themes/singularity.css` への取り込みが完了したため削除済み。必要になったら Git 履歴（初回コミット）から取り出せる。旧運用の `docs/YYYYMMDD_*.md`（企画書）も Issue へ移設のうえ削除済みで、原文は Git 履歴から取り出せる。
 
+## 体験会の企画 Issue を作る
+
+新しい体験会は、まず企画 Issue（`企画`＋`体験会` ラベル）を起票し、そこからデッキ等のコンテンツを作る。起票は `.claude/skills/taikenkai-plan-issue/` のスキルで行う（聞き取り → カリキュラム・過去の企画の下調べ → `.github/ISSUE_TEMPLATE/presentation-plan.md` を体験会向けに具体化した骨組みで本文作成 → `scripts/check_plan.py` で規約チェック → ユーザー確認のうえ起票）。体験会の前提（初心者向け・月曜 20:00〜21:00 の 60 分で定型 15 分＋本編約 45 分・単発参加者が多いので前回前提の構成は入れない・配布物は回ごとにリポジトリを作らずファイルを Zoom で共有）はスキルの手順 0 にまとめてある。
+
 ## 企画 Issue からデッキを作る流れ
 
 1. **企画 Issue を読む**：GitHub MCP の `issue_read`（`method: "get"`／議論は `get_comments`）で本文とコメントを取得する。どの Issue か分からない場合は `list_issues` を `labels: ["企画"]` で絞る。**Issue 本文が正、コメントは経緯**として扱い、食い違ったら本文の最新版に従う。このとき **Issue のラベルを必ず確認**し、`体験会` ラベルが付いていたら下記「体験会デッキの必須スライド」を適用する。
@@ -110,5 +114,6 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 - 企画 Issue の「ひとことスライド文言案」を `##` の見出しに使い、各スライドは要点 3〜4 項目に圧縮、1 枚 1 メッセージ。
 - パートの見出しは `<!-- _header: 'PART 0X · ラベル' -->`、発表者ノート（企画 Issue の話すポイント）は各スライド末尾の `<!-- ... -->` コメントに置く。
 - 企画 Issue に `体験会` ラベルが付いているデッキは、`templates/` の定型スライド群（冒頭・末尾）の転記が必須（上記「体験会デッキの必須スライド」）。
+- `.claude/skills/taikenkai-plan-issue/` は体験会の企画 Issue を起票する手順スキル（上記「体験会の企画 Issue を作る」）。本文の規約チェックは `scripts/check_plan.py <下書き.md>`。
 - `.claude/skills/tech-share-deck/` は企画 Issue → デッキ作成の手順スキル。体験会の定型スライド転記は `scripts/taikenkai_slides.py wrap <deck>`、規約チェックは `scripts/check_deck.py <deck> [--taikenkai]` で行える（手作業の転記・確認の代わりに使ってよい）。
 - `marp-slide` スキル（softaworks/agent-toolkit）は導入済みだが、雛形生成の補助であり、デザインは常に共有テーマ側で管理する。
