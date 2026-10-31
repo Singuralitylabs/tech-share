@@ -136,8 +136,15 @@ def check_basic(sec: str, today: dt.date) -> None:
 def planned_minutes(basic: str) -> int:
     """「基本情報」表の「想定時間」欄の分数。読めなければ原則の 60 分。"""
     m = DURATION_ROW_RE.search(basic)
-    n = first_int(m.group(1)) if m else None
-    return n or DEFAULT_MINUTES
+    if not m:
+        return DEFAULT_MINUTES
+    cell = m.group(1)
+    # 「90分」「1時間30分」「月曜 20:00〜21:30（90分）」のどれでも分数を拾う（時刻の数字は使わない）
+    hours = re.search(r"(\d+)\s*時間", cell)
+    mins = re.search(r"(\d+)\s*分", cell)
+    if hours or mins:
+        return (int(hours.group(1)) * 60 if hours else 0) + (int(mins.group(1)) if mins else 0)
+    return first_int(cell) or DEFAULT_MINUTES
 
 
 def check_timetable(sec: str, planned: int) -> None:
