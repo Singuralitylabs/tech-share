@@ -64,6 +64,24 @@ def strip_comments(text: str) -> str:
     return re.sub(r"<!--.*?-->", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)
 
 
+def strip_fences(text: str) -> str:
+    """フェンス付きコードブロック（``` / ~~~）の中身を、行番号がずれないよう改行だけ残して消す。
+    補足メモに貼った SKILL.md などの `## ` `### ` 行を、見出しと取り違えないため。"""
+    out, fence = [], ""
+    for line in text.split("\n"):
+        m = re.match(r"\s*(`{3,}|~{3,})", line)
+        if fence:
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not line.strip()[len(m.group(1)):]:
+                fence = ""
+            out.append("")
+        elif m:
+            fence = m.group(1)
+            out.append("")
+        else:
+            out.append(line)
+    return "\n".join(out)
+
+
 def sections(text: str) -> dict[str, str]:
     """`## 見出し` ごとの本文。"""
     out: dict[str, str] = {}
@@ -222,7 +240,7 @@ def main() -> None:
         sys.exit(__doc__)
     raw = Path(args[0]).read_text(encoding="utf-8")
     text = strip_comments(raw)
-    secs = sections(text)
+    secs = sections(strip_fences(text))
 
     for name in REQUIRED_SECTIONS:
         if name not in secs:
