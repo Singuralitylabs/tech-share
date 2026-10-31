@@ -152,7 +152,12 @@ def apply_cover_event(body: str, name: str) -> tuple[str, str]:
     if "tkt" not in classes:
         return body, ("表紙が `lead tkt` ではないので、表紙の体験会名は入れていない"
                       "（体験会デッキの表紙は `lead tkt` ＋ `# <体験会名> 体験会`）")
+    in_comment = False
     for i in range(start, end):
+        # 発表者ノート（HTML コメント）の中の `# ` 行は見出しではないので飛ばす
+        if in_comment or lines[i].lstrip().startswith("<!--"):
+            in_comment = "-->" not in lines[i]
+            continue
         if lines[i].startswith("# "):
             if not COVER_TITLE_RE.match(lines[i]):
                 return body, f"表紙の見出し「{lines[i]}」が `# <体験会名> 体験会` の形ではないので、書き換えていない"

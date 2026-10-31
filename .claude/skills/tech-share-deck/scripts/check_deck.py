@@ -181,6 +181,7 @@ def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", is
     events: list[str] = []  # アンケート・ご支援スライドの体験会名。opening・closing を通して1種類であること
     # opening：表紙の直前に全枚・同順・同文
     lead_idx = next((i for i, s in enumerate(slides) if "lead" in " ".join(s.classes()).split()), None)
+    has_lead = lead_idx is not None
     if lead_idx is None:
         lead_idx = len(opening)
     if lead_idx != len(opening):
@@ -215,7 +216,8 @@ def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", is
             used.add(k)
         else:
             err(f"L{s.start}: closing 定型 {j + 1} 枚目（{tmpl_head[3:]}）が templates/taikenkai-closing.md と一致しない（文言改変・合体・欠落・`---` 漏れ）")
-    cover = check_cover(slides[lead_idx], required) if lead_idx < len(slides) else None
+    # 表紙が無いデッキは check_slides が ERROR にするので、ここでは表紙の形を見ない（本編1枚目を表紙と誤認しないため）
+    cover = check_cover(slides[lead_idx], required) if has_lead else None
     if len(set(events)) > 1:
         err(f"体験会名が不一致：{sorted(set(events))}（アンケート・ご支援スライドの体験会名は opening・closing を通して同じ名前にそろえる）")
     elif events and cover and cover[1] != events[0]:
@@ -268,7 +270,7 @@ def check_tkb(main: list[Slide]) -> None:
         vis = s.visible_lines()
         top = sum(1 for l in vis if re.match(r"^([-*]|\d+\.) ", l))
         if "grid" in names:
-            cards, subs = [], 0
+            cards = []
             for l in vis:
                 if re.match(r"^[-*] ", l):
                     cards.append(0)
@@ -289,7 +291,11 @@ def check_tkb(main: list[Slide]) -> None:
             fences = sum(1 for l in vis if l.lstrip().startswith("```")) // 2
             if fences > 3:
                 warn(f"L{s.start}: tkb dense にコードブロックが {fences} 個（ラベル付きで 3 個まで）")
-        elif not names or names == ["tkb"] or "center" in names:
+        elif "center" in names:
+            quotes = sum(1 for l in vis if l.startswith(">"))
+            if top + quotes > 5:
+                warn(f"L{s.start}: tkb center が箇条書き {top} 個＋引用 {quotes} 行（合わせて 5 つまで。引用 1 行＋箇条書き 4 個が上限）")
+        elif names == ["tkb"]:
             quotes = sum(1 for l in vis if l.startswith(">"))
             if top + quotes > 6:
                 warn(f"L{s.start}: tkb の本文が箇条書き {top} 個＋引用 {quotes} 行（合わせて 6 つまで。箇条書き 5 個＋引用 1 行が上限）")
