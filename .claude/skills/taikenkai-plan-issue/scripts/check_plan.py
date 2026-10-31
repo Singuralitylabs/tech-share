@@ -12,10 +12,10 @@ ERROR は直してから起票する。WARN は候補なので、読んで直す
 - 「体験会名」欄（taikenkai_slides.py wrap が読む。空欄・記入例のままだと転記が止まる）
 - 発表日（YYYY-MM-DD、月曜か、過去日でないか）
 - 各パートの「ひとことスライド文言案」（デッキの見出しになる。空・長すぎ）
-- タイムテーブルの合計時間（60 分）と定型 15 分の行
+- タイムテーブルの合計時間（「想定時間」欄と一致するか。欄が読めなければ原則の 60 分）と定型 15 分の行
 - スライド構成の枚数の合計と、tkb と併用できないクラス
 - 骨組みの記入欄（〈〉）・テンプレートの空欄（○分・「」など）の残り
-- 前回前提の構成（前回のおさらい など）、回ごとのリポジトリ作成
+- 前回前提の構成（前回のおさらい など）
 """
 from __future__ import annotations
 
@@ -40,12 +40,12 @@ DATE_ROW_RE = re.compile(r"^\|\s*発表日\s*\|\s*(.*?)\s*\|\s*$", re.M)
 # tkb の見出し（44px）が 1 行に収まる目安。全角 1・半角 0.5 で数える
 # （decks/20261102_skills.md の最長「いつも守ることは CLAUDE.md、作業の手順はスキル」が 23）
 HEADLINE_MAX = 24
-TOTAL_MINUTES = 60
+DEFAULT_MINUTES = 60  # 体験会の原則。回によっては長く取るので「想定時間」欄を優先する
+DURATION_ROW_RE = re.compile(r"^\|\s*想定時間\s*\|\s*(.*?)\s*\|\s*$", re.M)
 # tkb と併用できない（references/layouts.md「tkb」節）。src は参考スライドだけで使う
 TKB_NG = {"trend", "pair", "wide", "split", "refs"}
 RECAP_RE = re.compile(r"前回のおさらい|前回までの(流れ|おさらい|内容)|前回の(フォルダ|続き|ファイル)")
 NEGATION_RE = re.compile(r"(入れ|置か|使わ|書か|し)ない|前提にしない|不要")
-REPO_RE = re.compile(r"(リポジトリ|repo)[^。\n]{0,12}(作る|作成|用意|公開|clone|クローン|fork|フォーク)", re.I)
 
 errors: list[str] = []
 warns: list[str] = []
@@ -133,7 +133,14 @@ def check_basic(sec: str, today: dt.date) -> None:
         warn(f"基本情報：発表日 {day} が過去の日付")
 
 
-def check_timetable(sec: str) -> None:
+def planned_minutes(basic: str) -> int:
+    """「基本情報」表の「想定時間」欄の分数。読めなければ原則の 60 分。"""
+    m = DURATION_ROW_RE.search(basic)
+    n = first_int(m.group(1)) if m else None
+    return n or DEFAULT_MINUTES
+
+
+def check_timetable(sec: str, planned: int) -> None:
     rows = table_rows(sec)
     if len(rows) < 2:
         err("タイムテーブル：表が無い")
@@ -159,8 +166,8 @@ def check_timetable(sec: str) -> None:
             total += n
     if not has_fixed:
         warn("タイムテーブル：定型（冒頭・末尾）の行が無い（体験会は定型スライドで約 15 分使う）")
-    if total != TOTAL_MINUTES:
-        warn(f"タイムテーブル：目安の合計が {total} 分（{TOTAL_MINUTES} 分に収める）")
+    if total != planned:
+        warn(f"タイムテーブル：目安の合計が {total} 分（基本情報の想定時間は {planned} 分）")
     if total_row is not None and total_row != total:
         warn(f"タイムテーブル：合計行 {total_row} 分と各行の和 {total} 分が合わない")
 
@@ -225,8 +232,6 @@ def check_text(text: str) -> None:
                 warn(f"{no} 行目：テンプレートの空欄（{what}）が残っている：{line.strip()[:60]}")
         if RECAP_RE.search(line) and not NEGATION_RE.search(line):
             warn(f"{no} 行目：前回前提の構成に見える（単発参加者が多いので入れない）：{line.strip()[:60]}")
-        if REPO_RE.search(line) and not re.search(r"作らない|不要|使わない", line):
-            warn(f"{no} 行目：回ごとのリポジトリを用意する前提に見える（配布はファイルを Zoom で共有）：{line.strip()[:60]}")
 
 
 def main() -> None:
@@ -248,7 +253,7 @@ def main() -> None:
     if "基本情報" in secs:
         check_basic(secs["基本情報"], today)
     if "タイムテーブル" in secs:
-        check_timetable(secs["タイムテーブル"])
+        check_timetable(secs["タイムテーブル"], planned_minutes(secs.get("基本情報", "")))
     if "各パート" in secs:
         check_parts(secs["各パート"])
     if "スライド構成" in secs:

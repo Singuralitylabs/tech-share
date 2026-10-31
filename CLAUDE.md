@@ -25,7 +25,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 体験会の企画 Issue を作る
 
-新しい体験会は、まず企画 Issue（`企画`＋`体験会` ラベル）を起票し、そこからデッキ等のコンテンツを作る。起票は `.claude/skills/taikenkai-plan-issue/` のスキルで行う（聞き取り → カリキュラム・過去の企画の下調べ → `.github/ISSUE_TEMPLATE/presentation-plan.md` を体験会向けに具体化した骨組みで本文作成 → `scripts/check_plan.py` で規約チェック → ユーザー確認のうえ起票）。体験会の前提（初心者向け・月曜 20:00〜21:00 の 60 分で定型 15 分＋本編約 45 分・単発参加者が多いので前回前提の構成は入れない・配布物は回ごとにリポジトリを作らずファイルを Zoom で共有）はスキルの手順 0 にまとめてある。
+新しい体験会は、まず企画 Issue（`企画`＋`体験会` ラベル）を起票し、そこからデッキ等のコンテンツを作る。起票は `.claude/skills/taikenkai-plan-issue/` のスキルで行う（聞き取り → カリキュラム・過去の企画の下調べ → `.github/ISSUE_TEMPLATE/presentation-plan.md` を体験会向けに具体化した骨組みで本文作成 → `scripts/check_plan.py` で規約チェック → ユーザー確認のうえ起票）。体験会の前提（初心者向け・原則は月曜 20:00〜21:00 の 60 分で定型 15 分＋本編約 45 分、回によっては長く取る・単発参加者が多いので前回前提の構成は入れない）はスキルの手順 0 にまとめてある。
 
 ## 企画 Issue からデッキを作る流れ
 
