@@ -32,13 +32,13 @@ lang: ja
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
-<!-- _class: tk -->
+<!-- _class: tk lg -->
 
 ## AI駆動開発体験会アンケート
 
 チャットにもURLを貼りますので、ご回答お願いします<br>（アンケート回答頂いた方には本スライドをお送りします）
 
-![w:250](../assets/taikenkai/qr-survey.png)
+![w:430](../assets/taikenkai/qr-survey.png)
 
 <!--
 アンケートURL（チャット貼り付け用）：
@@ -95,7 +95,7 @@ opening 3枚目とほぼ同内容。導入文だけ「本〜継続するため�
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
-<!-- _class: tk pair -->
+<!-- _class: tk pair lg -->
 
 ## 今後のイベントのお知らせ
 
@@ -107,7 +107,7 @@ opening 3枚目とほぼ同内容。導入文だけ「本〜継続するため�
 - 11/16 (月) 20時~ チーム開発体験会
 
 <p class="fig">
-<img src="../assets/taikenkai/qr-events.png" alt="申込フォームQR" width="200">
+<img src="../assets/taikenkai/qr-events.png" alt="申込フォームQR" width="260">
 申込フォーム
 </p>
 
@@ -136,7 +136,7 @@ opening 3枚目とほぼ同内容。導入文だけ「本〜継続するため�
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
-<!-- _class: tk pair -->
+<!-- _class: tk pair lg -->
 
 ## どんなコミュニティなの？
 
@@ -198,8 +198,8 @@ opening 3枚目とほぼ同内容。導入文だけ「本〜継続するため�
 | サービスサイト | 紹介サイト |
 
 <p class="fig">
-<img src="../assets/taikenkai/screenshot-study-gas.jpeg" alt="フェーズ別画面" width="500">
-フェーズ別画面
+<img src="../assets/taikenkai/screenshot-study-top.png" alt="Sinlab Study のトップ画面" width="500">
+トップ画面
 </p>
 
 <!--

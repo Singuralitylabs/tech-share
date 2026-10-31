@@ -10,6 +10,7 @@
 - print: 転記対象（最初の `<!-- _paginate: skip -->` 行から EOF まで）を標準出力に出す。
   front matter と転記ガイドのコメントは含まれない。
 - wrap: デッキの front matter の直後に opening、末尾に closing を、継ぎ目の `---` 付きで差し込む。
+  表紙（`_class: lead tkt`）の見出し `# <体験会名> 体験会` も、定型スライドと同じ体験会名で書き換える。
   既に転記済み（opening の先頭スライドの見出しがデッキ内にある）なら何もしない。
   差し替え欄（今後のイベント・○月の活動）はテンプレートのまま入るので、転記後に最新化すること。
 - 体験会名：アンケート・ご支援スライドの見出しと導入文にある体験会名（テンプレートでは「AI駆動開発」）は、
@@ -18,6 +19,7 @@
   --issue / 表紙 URL からの取得には gh CLI（`gh issue view`）を使う。gh が無い環境では、Issue 本文を
   GitHub MCP の issue_read で取ってファイルに保存し --issue-file で渡すか、欄の値を --event で渡す。
   どれでも体験会名が決まらなければ転記しない（既定名のまま別の回に出るのを防ぐため）。
+  表紙が `lead tkt` でない（旧形式の `lead` だけ）ときは表紙に触れず、その旨を表示する。
 - event: Issue から読んだ体験会名を表示するだけ（確認用）。
 - print にも --event / --issue / --issue-file を付けられる。
 """
@@ -34,6 +36,9 @@ REPO = "Singuralitylabs/tech-share"
 ISSUE_URL_RE = re.compile(r"企画 Issue：https://github\.com/Singuralitylabs/tech-share/issues/(\d+)")
 # 企画 Issue 本文「基本情報」表の行：| 体験会名 | Web技術 |
 EVENT_ROW_RE = re.compile(r"^\|\s*体験会名\s*\|\s*(.*?)\s*\|\s*$", re.M)
+# 体験会デッキの表紙（`_class: lead tkt`）の見出し：# <体験会名> 体験会
+COVER_TITLE_RE = re.compile(r"^# (.*?)\s*体験会\s*$")
+CLASS_LINE_RE = re.compile(r"^<!--\s*_class:\s*(.*?)\s*-->\s*$")
 
 
 def repo_root() -> Path:
@@ -119,6 +124,48 @@ def split_front_matter(text: str) -> tuple[str, str]:
     sys.exit("front matter が閉じていない")
 
 
+def cover_range(lines: list[str]) -> tuple[int, int, list[str]] | None:
+    """表紙スライド（`_class` に lead を含む最初のスライド）の (開始行, 終了行(排他), クラス一覧)。
+    コードブロック内の `---` やディレクティブは数えない。表紙が無ければ None。"""
+    fence, start = False, 0
+    for i, line in enumerate(lines + ["---"]):
+        if line.lstrip().startswith("```"):
+            fence = not fence
+            continue
+        if fence:
+            continue
+        if line.strip() == "---":
+            classes = [c for l in lines[start:i] if (m := CLASS_LINE_RE.match(l.strip())) for c in m.group(1).split()]
+            if "lead" in classes:
+                return start, i, classes
+            start = i + 1
+    return None
+
+
+def apply_cover_event(body: str, name: str) -> tuple[str, str]:
+    """表紙が `lead tkt` なら、見出し（`# ... 体験会`）を `# <name> 体験会` にする。(新しい本文, 結果の説明) を返す。"""
+    lines = body.split("\n")
+    found = cover_range(lines)
+    if not found:
+        return body, "表紙（_class: lead）が見つからないので、表紙の体験会名は入れていない"
+    start, end, classes = found
+    if "tkt" not in classes:
+        return body, ("表紙が `lead tkt` ではないので、表紙の体験会名は入れていない"
+                      "（体験会デッキの表紙は `lead tkt` ＋ `# <体験会名> 体験会`）")
+    in_comment = False
+    for i in range(start, end):
+        # 発表者ノート（HTML コメント）の中の `# ` 行は見出しではないので飛ばす
+        if in_comment or lines[i].lstrip().startswith("<!--"):
+            in_comment = "-->" not in lines[i]
+            continue
+        if lines[i].startswith("# "):
+            if not COVER_TITLE_RE.match(lines[i]):
+                return body, f"表紙の見出し「{lines[i]}」が `# <体験会名> 体験会` の形ではないので、書き換えていない"
+            lines[i] = f"# {name} 体験会"
+            return "\n".join(lines), f"表紙の見出しを「# {name} 体験会」にした"
+    return body, "表紙に見出し（# <体験会名> 体験会）が無いので、表紙の体験会名は入れていない"
+
+
 def first_heading(body: str) -> str:
     for line in body.splitlines():
         if line.startswith("## "):
@@ -136,12 +183,12 @@ def wrap(deck_path: str, opts: dict) -> None:
         print(f"{deck}: 定型スライドは転記済みのようなのでスキップ", file=sys.stderr)
         return
     fm, body = split_front_matter(text)
-    body = body.strip("\n")
+    body, cover_msg = apply_cover_event(body.strip("\n"), event)
     new = f"{fm}\n{opening}\n---\n\n{body}\n\n---\n\n{closing}"
     deck.write_text(new, encoding="utf-8")
     print(
         f"{deck}: opening を表紙の前に、closing を末尾に転記した。"
-        f"体験会名は「{event}」で入れた。"
+        f"体験会名は「{event}」で入れた（{cover_msg}）。"
         "差し替え欄（今後のイベントのお知らせ／○月の主なシンラボ活動の紹介）を最新化すること",
         file=sys.stderr,
     )
