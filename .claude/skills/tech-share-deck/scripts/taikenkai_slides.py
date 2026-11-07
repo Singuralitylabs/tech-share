@@ -6,6 +6,8 @@
   python3 .claude/skills/tech-share-deck/scripts/taikenkai_slides.py print closing
   python3 .claude/skills/tech-share-deck/scripts/taikenkai_slides.py wrap decks/YYYYMMDD_topic.md [--issue N | --issue-file 本文.md | --event 体験会名]
   python3 .claude/skills/tech-share-deck/scripts/taikenkai_slides.py event (--issue N | --issue-file 本文.md)
+  python3 .claude/skills/tech-share-deck/scripts/taikenkai_slides.py print instructor (--instructor ID | --issue N | --issue-file 本文.md)
+  python3 .claude/skills/tech-share-deck/scripts/taikenkai_slides.py instructors
 
 - print: 転記対象（最初の `<!-- _paginate: skip -->` 行から EOF まで）を標準出力に出す。
   front matter と転記ガイドのコメントは含まれない。
@@ -20,7 +22,13 @@
   GitHub MCP の issue_read で取ってファイルに保存し --issue-file で渡すか、欄の値を --event で渡す。
   どれでも体験会名が決まらなければ転記しない（既定名のまま別の回に出るのを防ぐため）。
   表紙が `lead tkt` でない（旧形式の `lead` だけ）ときは表紙に触れず、その旨を表示する。
+- 講師紹介：企画 Issue 本文「基本情報」表の「講師」欄に書いた講師ID（複数はカンマ区切り）ごとに、
+  templates/instructor-<講師ID>.md のスライドを表紙（`_class: lead`）の直後に欄の順で差し込む。
+  講師ID の決め方は体験会名と同じ順（--instructor ID[,ID] > --issue-file > --issue N > 表紙の企画 Issue URL）。
+  欄が空・講師ID のファイルが無いときは転記しない。定型スライドが転記済みのデッキでも、
+  講師紹介（`_class` に prof）がまだ無ければ講師紹介だけ差し込む。
 - event: Issue から読んだ体験会名を表示するだけ（確認用）。
+- instructors: 用意済みの講師ID（templates/instructor-*.md）の一覧を表示する。
 - print にも --event / --issue / --issue-file を付けられる。
 """
 import re
@@ -39,6 +47,11 @@ EVENT_ROW_RE = re.compile(r"^\|\s*体験会名\s*\|\s*(.*?)\s*\|\s*$", re.M)
 # 体験会デッキの表紙（`_class: lead tkt`）の見出し：# <体験会名> 体験会
 COVER_TITLE_RE = re.compile(r"^# (.*?)\s*体験会\s*$")
 CLASS_LINE_RE = re.compile(r"^<!--\s*_class:\s*(.*?)\s*-->\s*$")
+# 講師紹介スライド（templates/instructor-<講師ID>.md）。転記対象は最初の INSTRUCTOR_MARKER 行から EOF まで
+INSTRUCTOR_MARKER = "<!-- _footer: '' -->"
+INSTRUCTOR_ROW_RE = re.compile(r"^\|\s*講師\s*\|\s*(.*?)\s*\|\s*$", re.M)
+INSTRUCTOR_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+PROF_CLASS_RE = re.compile(r"<!--\s*_class:[^>]*\bprof\b[^>]*-->")
 
 
 def repo_root() -> Path:
@@ -92,26 +105,92 @@ def fetch_issue_body(number: str) -> str:
                  "Issue 本文をファイルに保存して --issue-file で渡すか、体験会名を --event で渡す")
 
 
+_issue_cache: dict[str, tuple[str, str]] = {}
+
+
+def issue_body(opts: dict, deck_text: str = "") -> tuple[str, str]:
+    """--issue-file > --issue > デッキ表紙の企画 Issue URL の順に企画 Issue 本文を取る。(本文, 取得元) を返す。"""
+    if opts.get("issue_file"):
+        return Path(opts["issue_file"]).read_text(encoding="utf-8"), opts["issue_file"]
+    number = opts.get("issue")
+    if not number:
+        m = ISSUE_URL_RE.search(deck_text)
+        number = m.group(1) if m else ""
+    if not number:
+        sys.exit("企画 Issue が決まらない：--issue N / --issue-file を付けるか（体験会名・講師は --event / --instructor でも渡せる）、"
+                 "表紙コメントに企画 Issue の URL を書いてから転記する")
+    if number not in _issue_cache:
+        _issue_cache[number] = (fetch_issue_body(number), f"企画 Issue #{number}")
+    return _issue_cache[number]
+
+
 def resolve_event(opts: dict, deck_text: str = "") -> str:
     """--event > --issue-file > --issue > デッキ表紙の企画 Issue URL の順に体験会名を決める。決まらなければ終了する。"""
     if opts.get("event"):
         return opts["event"]
-    if opts.get("issue_file"):
-        body, where = Path(opts["issue_file"]).read_text(encoding="utf-8"), opts["issue_file"]
-    else:
-        number = opts.get("issue")
-        if not number:
-            m = ISSUE_URL_RE.search(deck_text)
-            number = m.group(1) if m else ""
-        if not number:
-            sys.exit("体験会名が決まらない：--issue N / --issue-file / --event のどれかを付けるか、"
-                     "表紙コメントに企画 Issue の URL を書いてから転記する")
-        body, where = fetch_issue_body(number), f"企画 Issue #{number}"
+    body, where = issue_body(opts, deck_text)
     event = event_from_issue_body(body)
     if not event:
         sys.exit(f"{where} の「基本情報」表に「体験会名」が書かれていない（空欄・記入例のまま）。"
                  "Issue に記入するか、--event で渡す")
     return event
+
+
+def instructor_ids() -> list[str]:
+    """用意済みの講師ID（templates/instructor-<講師ID>.md）。"""
+    return sorted(p.stem[len("instructor-"):] for p in (repo_root() / "templates").glob("instructor-*.md"))
+
+
+def parse_instructors(value: str) -> list[str]:
+    """「講師」欄の値（カンマ・読点・空白区切り）を講師ID のリストにする。空欄・記入例なら空リスト。"""
+    value = re.sub(r"<!--.*?-->", "", value).strip()
+    if not value or value.startswith("例"):
+        return []
+    return [v.strip().strip("`") for v in re.split(r"[,、，\s]+", value) if v.strip().strip("`")]
+
+
+def instructors_from_issue_body(body: str) -> list[str]:
+    m = INSTRUCTOR_ROW_RE.search(body)
+    return parse_instructors(m.group(1)) if m else []
+
+
+def resolve_instructors(opts: dict, deck_text: str = "") -> list[str]:
+    """--instructor > --issue-file > --issue > デッキ表紙の企画 Issue URL の順に講師ID を決め、ファイルの有無も確かめる。"""
+    if opts.get("instructor"):
+        ids, where = parse_instructors(opts["instructor"]), "--instructor"
+    else:
+        body, where = issue_body(opts, deck_text)
+        ids = instructors_from_issue_body(body)
+        if not ids:
+            sys.exit(f"{where} の「基本情報」表に「講師」が書かれていない（空欄・記入例のまま）。"
+                     f"講師ID（用意済み：{', '.join(instructor_ids()) or 'なし'}）を Issue に記入するか、--instructor で渡す")
+    available = instructor_ids()
+    for iid in ids:
+        if not INSTRUCTOR_ID_RE.match(iid) or iid not in available:
+            sys.exit(f"{where} の講師「{iid}」の講師紹介スライド templates/instructor-{iid}.md が無い"
+                     f"（用意済み：{', '.join(available) or 'なし'}）。templates/instructor-yamada.md をコピーして作るか、講師ID を直す")
+    return ids
+
+
+def instructor_body(iid: str) -> str:
+    path = repo_root() / "templates" / f"instructor-{iid}.md"
+    text = path.read_text(encoding="utf-8")
+    idx = text.find(INSTRUCTOR_MARKER)
+    if idx < 0:
+        sys.exit(f"{path}: `{INSTRUCTOR_MARKER}` が見つからない")
+    return text[idx:].strip("\n") + "\n"
+
+
+def insert_instructors(body: str, ids: list[str]) -> tuple[str, str]:
+    """講師紹介スライドを表紙の直後に差し込む。(新しい本文, 結果の説明) を返す。表紙が無ければ終了する。"""
+    lines = body.split("\n")
+    found = cover_range(lines)
+    if not found:
+        sys.exit("表紙（_class: lead）が見つからないので、講師紹介スライドを差し込めない")
+    end = found[1]
+    slides = "\n---\n\n".join(instructor_body(i).strip("\n") for i in ids)
+    lines[end:end] = ([] if end and not lines[end - 1].strip() else [""]) + ["---", "", slides, ""]
+    return "\n".join(lines).strip("\n"), f"講師紹介（{', '.join(ids)}）を表紙の直後に入れた"
 
 
 def split_front_matter(text: str) -> tuple[str, str]:
@@ -176,19 +255,30 @@ def first_heading(body: str) -> str:
 def wrap(deck_path: str, opts: dict) -> None:
     deck = Path(deck_path)
     text = deck.read_text(encoding="utf-8")
+    wrapped = bool(first_heading(template_body("opening"))) and first_heading(template_body("opening")) in text
+    has_prof = bool(PROF_CLASS_RE.search(text))
+    if wrapped and has_prof:
+        print(f"{deck}: 定型スライドと講師紹介は転記済みのようなのでスキップ", file=sys.stderr)
+        return
+    fm, body = split_front_matter(text)
+    body = body.strip("\n")
+    msgs = []
+    if not has_prof:
+        body, prof_msg = insert_instructors(body, resolve_instructors(opts, text))
+        msgs.append(prof_msg)
+    if wrapped:
+        deck.write_text(f"{fm}\n{body}\n", encoding="utf-8")
+        print(f"{deck}: 定型スライドは転記済みなので、{msgs[0]}", file=sys.stderr)
+        return
     event = resolve_event(opts, text)
     opening = apply_event(template_body("opening"), event)
     closing = apply_event(template_body("closing"), event)
-    if first_heading(opening) and first_heading(opening) in text:
-        print(f"{deck}: 定型スライドは転記済みのようなのでスキップ", file=sys.stderr)
-        return
-    fm, body = split_front_matter(text)
-    body, cover_msg = apply_cover_event(body.strip("\n"), event)
+    body, cover_msg = apply_cover_event(body, event)
     new = f"{fm}\n{opening}\n---\n\n{body}\n\n---\n\n{closing}"
     deck.write_text(new, encoding="utf-8")
     print(
         f"{deck}: opening を表紙の前に、closing を末尾に転記した。"
-        f"体験会名は「{event}」で入れた（{cover_msg}）。"
+        f"体験会名は「{event}」で入れた（{cover_msg}）。{'。'.join(msgs)}。"
         "差し替え欄（今後のイベントのお知らせ／○月の主なシンラボ活動の紹介）を最新化すること",
         file=sys.stderr,
     )
@@ -196,15 +286,19 @@ def wrap(deck_path: str, opts: dict) -> None:
 
 def main() -> None:
     args, opts = sys.argv[1:], {}
-    for flag in ("--event", "--issue", "--issue-file"):
+    for flag in ("--event", "--issue", "--issue-file", "--instructor"):
         if flag in args:
             i = args.index(flag)
             if i + 1 >= len(args):
                 sys.exit(__doc__)
             opts[flag[2:].replace("-", "_")] = args[i + 1]
             del args[i : i + 2]
-    if len(args) == 2 and args[0] == "print" and args[1] in ("opening", "closing"):
-        event = resolve_event(opts) if opts else ""
+    if args == ["print", "instructor"] and opts:
+        sys.stdout.write("\n---\n\n".join(instructor_body(i) for i in resolve_instructors(opts)))
+    elif args == ["instructors"]:
+        print("\n".join(instructor_ids()))
+    elif len(args) == 2 and args[0] == "print" and args[1] in ("opening", "closing"):
+        event = resolve_event(opts) if opts.keys() & {"event", "issue", "issue_file"} else ""
         sys.stdout.write(apply_event(template_body(args[1]), event))
     elif len(args) == 2 and args[0] == "wrap":
         wrap(args[1], opts)
