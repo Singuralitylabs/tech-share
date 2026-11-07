@@ -1,213 +1,79 @@
-# tech-share スライド
+# tech-share
 
-社内向け Tech Share 用のプレゼン資料を **Marp（Markdown → スライド）** で管理するリポジトリです。
-発表の**企画は GitHub Issue** で行い、合意できた企画をもとに `decks/` に Marp 形式の `.md` デッキを作成します。
+シンギュラリティ・ラボ（シンラボ）が開催する **Web 系スキルの解説コンテンツ**をまとめて管理するリポジトリです。
 
-## ディレクトリ構成
+## このリポジトリの目的
 
-```
-tech-share/
-├── decks/                    # Marp デッキ本体（成果物）
-│   └── YYYYMMDD_*.md
-├── build/                    # 書き出した生成物（再生成可能・git 管理外）
-│   └── YYYYMMDD_*.html / .pdf / .pptx
-├── themes/                   # 共有 Marp テーマ（デザインの実体）
-│   └── singularity.css       # 社内フォーマットを再現した自己完結テーマ
-├── docs/                     # リポジトリの手順書・ドキュメント
-│   └── google-slides.md      # Google スライド出力（k1LoW/deck）の手順
-├── templates/                # 体験会用の定型スライド群（`体験会` ラベル付き企画で必須）
-│   ├── taikenkai-opening.md  # 表紙の直前に入れる複数枚
-│   └── taikenkai-closing.md  # デッキの最後に入れる複数枚
-├── assets/                   # 画像（テーマ元データ ＋ 体験会定型の図）
-│   ├── logo.png / title-bg.png
-│   └── taikenkai/            # 定型スライド用の QR・写真・スクリーンショット
-├── .github/ISSUE_TEMPLATE/   # 企画 Issue のテンプレート
-│   └── presentation-plan.md
-├── .marprc.yml               # Marp CLI 設定（テーマ自動登録）
-├── .vscode/settings.json     # VS Code / Cursor 拡張向け設定
-├── .gitignore                # build/ と -o 付け忘れの保険
-├── CLAUDE.md                 # Claude Code 向けのリポジトリ案内
-└── README.md
-```
+プログラミングや AI 開発に関心のある方に向けて、Web 技術のスキルをわかりやすく共有するためのコンテンツを、企画から成果物まで一か所で管理します。
 
-- **`decks/`** … Marp デッキ。front matter に `theme: singularity` を書くだけでデザインが適用される。**企画 Issue の URL を表紙スライドのコメントに記載**し、発表者ノートも含めてデッキ側で自己完結させる。
-- **`build/`** … 書き出し先。`-o` で明示的にここへ出す。中身はいつでも捨てて再生成できる。
-- **`themes/singularity.css`** … 全デッキ共通のデザイン。社内フォーマットを CSS で再現し、ロゴ・表紙背景をデータ URI で内包した**自己完結テーマ**。デザイン変更はこのファイルを編集する（→[共有テーマ](#共有テーマthemessingularitycss)）。
-- **`docs/`** … **リポジトリの手順書置き場**。発表ごとの企画書はここには置かない（→[企画は Issue で行う](#企画は-issue-で行う)）。
-- **`templates/`** … **体験会用の定型スライド群**。企画 Issue に `体験会` ラベルが付いたデッキでは、`taikenkai-opening.md` の全スライドを表紙の直前に、`taikenkai-closing.md` の全スライドをデッキの最後に、順序どおり・文言を変えずに転記する（必須）。例外は closing の差し替え欄だけで、転記時に開催日程と月次活動を最新化する（型は残す。詳細は CLAUDE.md「体験会デッキの必須スライド」）。
-- **`assets/`** … テーマに埋め込んだ画像の元データ（`logo.png` / `title-bg.png`。レンダリング時には参照されない）と、体験会定型スライドが参照する図（`taikenkai/`）。
-- **`.github/ISSUE_TEMPLATE/presentation-plan.md`** … 企画 Issue のテンプレート（狙い・タイムテーブル・各パート・スライド構成表・Marp 実装メモ）。
+- **対象**：主に Web 技術の初心者。体験会（月 2〜3 回・オンライン）や社内 Tech Share での発表を想定しています。
+- **テーマ**：AI 駆動開発（Claude Code など）、GAS、Python での業務効率化、Web アプリのデプロイなど。
+- **扱うコンテンツ**：スライド（Marp）を中心に、サンプルコードや配布物など、解説に必要なもの全般。
+- **ねらい**：毎回の企画・資料づくりを同じ型で回せるようにし、過去の回の内容も後から見返せる状態にしておくこと。
 
-### 命名規則
+もともとはスライド作成専用のリポジトリでしたが、現在は Web 系スキルの解説コンテンツ全般を扱う場所として運用しています。
 
-デッキは **`YYYYMMDD_<topic>.md`** で作ります（`YYYYMMDD` は発表日）。収録済みのデッキは `decks/` を直接見てください。
+## コンテンツの作り方
+
+コンテンツは **「企画 Issue を立てる → そこから成果物を作る」** の流れで作ります。
+企画は GitHub Issue 上で練り、合意できた内容をもとにスライドなどの成果物をリポジトリに追加します。
 
 ```
-decks/20260101_example.md
+① 企画 Issue を起票     … 狙い・タイムテーブル・各パートの話すポイント・スライド構成を決める
+        ↓  コメントで議論し、決まった内容を Issue 本文に反映
+② 成果物を作る          … スライド（Marp デッキ）、必要に応じてサンプルコード・配布物
+        ↓
+③ PR を出してマージ     … PR に「Closes #N」を書いて企画 Issue を閉じる
 ```
 
-以降のコマンド例では、対象デッキの basename を `DECK` に入れて使います。
+どちらの工程にも **Claude Code 用のスキル**を用意してあります。リポジトリ直下で Claude Code を起動し、普段の言葉で依頼するだけで使えます。
 
-## 企画は Issue で行う
+### ① 企画 Issue を作る（スキル：`taikenkai-plan-issue`）
 
-発表の企画（テーマ出し → 構成検討 → 推敲）は、リポジトリにファイルをコミットするのではなく **GitHub Issue** 上で行います。
-反復して直す作業はコメントと本文編集の方が向いているためです。
+体験会の企画 Issue（`企画` ＋ `体験会` ラベル）を起票するスキルです。開催日・テーマ・体験会名を聞き取り、過去の企画も下調べしたうえで、タイムテーブルや各パートの話すポイント、スライド構成まで埋めた本文を作ります。起票前に内容の確認を求められるので、OK を出すと Issue が作られます。
 
-1. **起票**：Issue を新規作成し、テンプレート「**発表企画**」を選ぶ。`企画` ラベルが自動で付きます。
-   **体験会イベントの企画の場合は、あわせて `体験会` ラベルを手動で付けてください**（デッキに `templates/` の定型スライドが必須になります）。
-2. **推敲**：コメントで議論し、合意した内容は Issue 本文に反映していく。
-3. **デッキ作成**：`decks/YYYYMMDD_<topic>.md` を作る。**表紙スライドのコメントに企画 Issue の URL を書き**、Issue 本文の「デッキ」欄にもパスを書き戻す。
-4. **転記**：企画の「話すポイント」は各スライド末尾の発表者ノート（HTML コメント）に転記する。
-   Issue は後から編集でき git 履歴にも残らないため、**企画の最終形はデッキ側に反映しきり、デッキを自己完結させます**。
-5. **クローズ**：デッキ完成時のコミット / PR に `Closes #N` を書いて企画 Issue を閉じる。
+依頼の例：
 
-過去（`docs/` 運用時代）の企画書は Issue に移設済みです（[#4 生成AIトレンド](https://github.com/Singuralitylabs/tech-share/issues/4) /
-[#5 Claude Code 基礎講座](https://github.com/Singuralitylabs/tech-share/issues/5)）。原文は git 履歴からも取り出せます。
+> 11/16 の体験会の企画 Issue を作って。テーマは「チーム開発体験」
 
-## 必要環境
+体験会以外の発表は、Issue を新規作成してテンプレート「**発表企画**」を選べば、`企画` ラベル付きで起票できます。
 
-- **Node.js**（`npx` で marp-cli を都度取得するため。グローバルインストールは不要）
-- **Google Chrome**（PNG / PDF / PPTX の書き出し、プレビューウィンドウで使用）
+### ② 企画 Issue からスライドを作る（スキル：`tech-share-deck`）
 
-## プレビュー方法
+企画 Issue を読み込んで、Marp のスライドデッキを作るスキルです。共通テーマの適用、表紙への企画 Issue の URL 記載、発表者ノートへの話すポイントの転記、体験会用の定型スライド（冒頭の案内・末尾のお知らせなど）の追加、はみ出しの確認までを一通り行います。
 
-ターミナル（Warp など）自体はスライドを描画できません。以下のいずれかで確認します。
+依頼の例：
 
-### A. ブラウザにライブリロード（ターミナル完結・おすすめ）
+> Issue #N（企画 Issue の番号）からデッキを作って
+
+サンプルコードや配布物が必要な回は、企画 Issue に「何を配るか」を書いておき、スライドと合わせて用意します。配り方（リポジトリ、Zoom のチャットでのファイル共有など）は回ごとに決めます。
+
+### 作るときに大事にしていること
+
+- **企画は Issue、成果物はリポジトリ**。Issue は後から編集でき履歴に残らないため、企画の最終形（話すポイントなど）はスライドの発表者ノートに転記し、成果物だけで内容がわかるようにします。
+- **1 回ごとに完結させる**。体験会は単発の参加者が多いので、「前回のおさらい」など前の回を前提にした構成は入れません。
+- **初心者向けの分量で**。体験会は原則 60 分（定型の案内が約 15 分、本編が約 45 分）に収まるように組みます。
+- **デザインは共通テーマに任せる**。スライドの見た目はすべて共通テーマ（シンギュラリティ・ラボのフォーマット）で管理し、個々のスライドにはスタイルを書きません。
+
+## スライドの確認・書き出し
+
+スライドは [Marp](https://marp.app/) で Markdown から作ります。Node.js と Google Chrome があれば、インストール不要で確認・書き出しができます（リポジトリ直下で実行してください）。
 
 ```bash
-cd /path/to/tech-share   # リポジトリ直下で実行する
 export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+# ブラウザでライブプレビュー（保存すると自動で再読み込み）
 npx @marp-team/marp-cli -s decks
+
+# PDF に書き出し（HTML・PPTX も同様に --pptx などで出せます）
+npx @marp-team/marp-cli --no-stdin --pdf decks/YYYYMMDD_topic.md -o build/YYYYMMDD_topic.pdf </dev/null
 ```
 
-`-s`（server）で `decks/` を配信します。表示される `http://localhost:8080` をブラウザで開くと、
-`.md` を保存するたびに **自動リロード** されます。サーバーは起動しっぱなしなので、別タブで動かしておくと便利です。
-（8080 が埋まっている場合は `PORT=8099 npx @marp-team/marp-cli -s decks` のように変更できます）
+VS Code / Cursor の「Marp for VS Code」拡張でも、エディタ横でプレビューできます（必要な設定はリポジトリに含めてあります）。
 
-### B. 専用プレビューウィンドウ
+## もっと詳しく知りたいとき
 
-```bash
-DECK=YYYYMMDD_topic   # ← 対象デッキの basename（decks/$DECK.md）
-npx @marp-team/marp-cli -w -p "decks/$DECK.md" </dev/null
-```
-
-`-p`（preview）でウィンドウが開き、`-w`（watch）で編集を自動反映します。GUI と Chrome（`CHROME_PATH`）が必要です。
-
-### C. Cursor / VS Code 拡張（編集しながら見るなら最良）
-
-「**Marp for VS Code**」拡張を入れると、エディタ横にライブプレビューが出ます
-（`.md` を開いて右上のプレビューアイコン、または `Cmd+Shift+V`）。
-
-> ⚠️ このデッキは見出しの改行や kicker、`pair` の図などで **インライン HTML（`<br>`, `<p class="kicker">`, `<p class="fig">` 等）** を使用しています。
-> 拡張は HTML が既定で無効なため、一部が崩れて見えます。設定 **`markdown.marp.html` を `true`**（または `all`）にすると
-> marp-cli の出力と一致します。marp-cli（A / B）は既定で HTML 有効のため、最終成果物と同じ見た目になります。
-
-## 書き出し（HTML / PDF / PPTX）
-
-**リポジトリ直下で実行**すると `.marprc.yml` が自動で読み込まれ、テーマ（`theme: singularity`）が解決されます。`--theme-set` は不要です。
-デッキは `decks/` にあるのでパスを付け、書き出し先は `-o` で `build/` を指定します。
-
-```bash
-cd /path/to/tech-share   # リポジトリ直下で実行する
-export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-
-DECK=YYYYMMDD_topic   # ← 対象デッキの basename（decks/$DECK.md）
-
-# HTML
-npx @marp-team/marp-cli --no-stdin "decks/$DECK.md" -o "build/$DECK.html" </dev/null
-
-# PDF
-npx @marp-team/marp-cli --no-stdin --pdf "decks/$DECK.md" -o "build/$DECK.pdf" </dev/null
-
-# PowerPoint
-npx @marp-team/marp-cli --no-stdin --pptx "decks/$DECK.md" -o "build/$DECK.pptx" </dev/null
-
-# 各スライドを PNG 画像に（確認用。リポジトリを汚さないよう /tmp へ）
-npx @marp-team/marp-cli --no-stdin --images png "decks/$DECK.md" -o /tmp/slide.png </dev/null
-```
-
-## 注意点（ハマりどころ）
-
-- **`--no-stdin` は必須**。付けない（かつ `</dev/null` を渡さない）と、非対話シェルで marp-cli が
-  **stdin 待ちのままハング** します（止まって見えるが、標準入力をブロックしているだけ）。
-- **PNG / PDF / PPTX・プレビューには Chrome が必要**。`CHROME_PATH` に実行ファイルのパスを指定します（上記は macOS の例）。
-- **`--allow-local-files` は不要**。ロゴ・表紙背景はテーマにデータ URI で内包している。体験会定型スライドは `assets/taikenkai/` のローカル画像を参照するが、`.marprc.yml` に `allowLocalFiles: true` を設定済みなので追加フラグは要らない。
-- **拡張プレビューと最終出力の差**：Cursor/VS Code 拡張は `markdown.marp.html` を有効にしないと
-  インライン HTML（`<br>` など）が反映されません。`.vscode/settings.json` で有効化済みです。
-- **`!important` の上書き**：テーマは `default`（GitHub 由来）を `@import` して継承しているため、
-  表・引用が淡色になる箇所を `!important` で上書きしています。色を調整する際はこの点に注意してください。
-- **`-o` を省略すると `decks/` が汚れる**。`--pdf` / `--pptx` は既定でデッキの隣に書き出します。
-  `.gitignore` で保険をかけていますが、`-o build/...` を付けるのが正です。
-- **`.marprc.yml` に `inputDir` を足さない**。`decks/` → `build/` を自動化できそうに見えますが、設定すると
-  ファイル名を渡すコマンドが全部 `[ERROR] Cannot pass files together with input directory.` で落ちます。
-  1 枚だけ PNG 化して確認する手段が失われるため、パスと `-o` を都度書く方を選んでいます。
-- **1 スライドに `_class` を 2 行書かない**。Marp は後勝ちで、先に書いた方が黙って捨てられます。
-  複数クラスは `<!-- _class: refs split src -->` のように半角スペース区切りで 1 行にまとめてください。
-- **はみ出しは警告されない**。Marp は本文が画面外へあふれても黙って切り落とします。とくに `split`
-  （右パネル）は本文幅を半分にするため、項目の多いスライドで下が消えます。スライドを足したら PNG で確認を。
-
-## 新しいデッキを作るには
-
-1. 企画 Issue を起票して内容を固める（→[企画は Issue で行う](#企画は-issue-で行う)）。
-2. `decks/YYYYMMDD_<topic>.md` を作成し、front matter に `theme: singularity` を書く。
-3. **表紙スライドのコメントに企画 Issue の URL を記載する**（デッキから企画へ辿れるようにする）。
-4. 企画の「ひとことスライド文言案」を見出しに、要点は 3〜4 項目に圧縮する（1 枚 1 メッセージ）。
-5. レイアウトは各スライドの `<!-- _class: ... -->` で切り替える（下記クラス一覧）。
-6. **企画 Issue に `体験会` ラベルが付いている場合**は、`templates/` の定型スライドの転記が必須。
-   手順・注意点（`---` 区切り、`_paginate: skip`、closing の差し替え欄）は CLAUDE.md「体験会デッキの必須スライド」を参照。
-7. 企画の「話すポイント」を各スライド末尾の発表者ノートに転記し、コミット / PR に `Closes #N` を書く。
-
-スライド作成には Claude Code のスキル **`marp-slide`**（softaworks/agent-toolkit）を利用できますが、
-デザインは常に共有テーマ `themes/singularity.css` 側で管理します（デッキにインライン `<style>` は書かない）。
-
-## 共有テーマ（`themes/singularity.css`）
-
-全デッキのデザインはこの 1 ファイルに集約されています。社内スライドフォーマット（「シンギュラリティ・ラボ」）を CSS で再現し、ロゴと表紙背景をデータ URI で内包した**自己完結テーマ**です。元フォーマットの PDF は、デザインを CSS に取り込み終えたため削除済みです（必要なら Git 履歴から取り出せます）。
-
-- **先頭**：`/* @theme singularity */` ＋ `@import 'default';`（`default` テーマを継承）。
-- **配色**：白背景 `#f9fafc` ＋ 濃紺→シアンのグラデーション **`#014e94` → `#66c5d2`**（見出し下線・矢印・強調）。本文は濃グレー、太字は濃紺。
-- **フォント**：Noto Sans JP（本文・見出し）／ Inter（数字・ラベル）。Google Fonts から `@import`。
-- **共通要素**：本文スライドは右上にロゴ（データ URI 埋め込み）、見出し下に濃紺→シアンのグラデ罫線、右下にページ番号、左上にパートラベル。
-- **表紙**：ローポリ柄背景を `section.lead` にデータ URI で内包（`![bg]` は不要）。
-- **PDF 3 レイアウトの対応**：1枚目→表紙（`lead`）、2枚目→本文・クロージング（既定）、3枚目→分割（`split`）。
-- **レイアウトクラス**（`<!-- _class: ... -->` で指定。複数指定は半角スペース区切り、例 `refs split`）：
-
-  | クラス | 用途 |
-  |---|---|
-  | `lead` | 表紙（ローポリ背景＋白文字） |
-  | `stat` | 大きな数字の強調 |
-  | `trend` | 推移レール（横並びカード＋矢印） |
-  | `flow` | 4 段階などのステップ図 |
-  | `grid` | 2×2 のカードグリッド |
-  | `ba` | ビフォー / アフター表 |
-  | `center` | 引用を中央に据える |
-  | `refs` | 参考・注記（18px） |
-  | `src` | 出典など密なリスト（15px） |
-  | `dense` | 手順スライド用（`pre` と引用を詰めて行数を稼ぐ） |
-  | `split` | 右側に青グラデパネル（PDF 3枚目） |
-  | `pair` | 本文＋右の図/QR（広い図は `pair wide`） |
-  | `tk` | 体験会定型スライド専用（上寄せ・大きめの文字。前回の Google スライド資料に寄せる） |
-
-  > `refs` と `src` は font-size が衝突します（両方付けると 18px になる）。出典スライドは **`src` 単独**で使ってください。
-
-- **図版は生レイアウト `<div>` を使わず**、Markdown ネイティブ要素（`<ol>` / `<ul>` / `<table>`）に CSS を当てて表現しています。これにより HTML 設定に依存せず描画されます。**例外は `pair` の `.fig`**（`<p class="fig">` ＋ `<img>`）。QR・写真の右寄せは raw HTML が前提で、`markdown.marp.html` が無効だと図が消えます。
-- **パートのラベル**は `<!-- _header: 'PART 0X · ...' -->`、**発表者ノート**は各スライド末尾の `<!-- ... -->` コメントに記載しています。
-
-### 他リポジトリ・他デッキへの再利用
-
-テーマは自己完結（ロゴ・表紙背景を内包）しているため、他のプロジェクトでも次の 2 ステップで使えます。
-
-1. `themes/singularity.css` をコピーする。
-2. テーマを登録する（いずれか）：
-   - **Marp CLI**：`.marprc.yml` に `themeSet: ["./themes"]` を書く（または `--theme-set themes/singularity.css`）。
-   - **VS Code / Cursor 拡張**：`.vscode/settings.json` の `markdown.marp.themes` にパスを追加し、`markdown.marp.html: true` にする。
-3. 各デッキの front matter に `theme: singularity` と書く。
-
-## 補足：バージョン管理
-
-生成物は `build/` にまとめ、`.gitignore` で除外しています。`decks/` `themes/` `docs/` `assets/`
-`.marprc.yml` `.vscode/` `.github/` はソースなので追跡します。
-
-`.gitignore` は `build/` に加えて、`-o` の付け忘れで生成物が `decks/` に落ちた場合の保険も持っています。
-確認用の PNG はリポジトリ内に出さず、`/tmp` などへ書き出してください。
+- 運用ルール・スライドの書き方・注意点の詳細 … [`CLAUDE.md`](CLAUDE.md)
+- 企画 Issue のテンプレート … [`.github/ISSUE_TEMPLATE/presentation-plan.md`](.github/ISSUE_TEMPLATE/presentation-plan.md)
+- 各スキルの手順 … [`.claude/skills/`](.claude/skills/)
+- Google スライドへの出力 … [`docs/google-slides.md`](docs/google-slides.md)
