@@ -205,9 +205,9 @@ def check_instructors(slides: list[Slide], lead_idx: int, required: bool, deck_t
         return set()
     body, where = fetch_issue(deck_text, issue_file)
     expected = instructors_from_issue_body(body) if body else []
-    if expected and len(found) == len(run) and found != expected:
+    if expected and len(run) == len(prof) and len(found) == len(run) and found != expected:
         err(f"講師紹介 {found} が {where} の「講師」欄 {expected} と違う（欄の順で表紙の直後に置く）")
-    return set(run)
+    return set(prof)
 
 
 def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", issue_file: str = "") -> set[int]:

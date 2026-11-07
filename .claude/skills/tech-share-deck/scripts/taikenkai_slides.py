@@ -278,7 +278,7 @@ def wrap(deck_path: str, opts: dict) -> None:
     deck.write_text(new, encoding="utf-8")
     print(
         f"{deck}: opening を表紙の前に、closing を末尾に転記した。"
-        f"体験会名は「{event}」で入れた（{cover_msg}）。{'。'.join(msgs)}。"
+        f"体験会名は「{event}」で入れた（{cover_msg}）。{''.join(m.rstrip('。') + '。' for m in msgs)}"
         "差し替え欄（今後のイベントのお知らせ／○月の主なシンラボ活動の紹介）を最新化すること",
         file=sys.stderr,
     )
