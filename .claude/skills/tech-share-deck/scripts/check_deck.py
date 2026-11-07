@@ -10,6 +10,8 @@
 指定しなくても、デッキに定型スライドが入っていれば転記内容を検査する。
 定型スライドと表紙（`lead tkt`）の体験会名は、表紙の企画 Issue の「体験会名」欄と照合する（Issue 本文は gh で取得。
 gh が無い環境では Issue 本文を保存したファイルを --issue-file で渡す。どちらも無ければ WARN で照合を飛ばす）。
+講師紹介（`_class: tk prof`）は、表紙の直後にあること・templates/instructor-<講師ID>.md と一致すること・
+企画 Issue の「講師」欄の順と一致することを見る（--taikenkai で講師紹介が無ければ WARN）。
 
 ERROR は直すべき規約違反、WARN は目視で判断する候補。はみ出しはこのスクリプトでは分からないので、
 PNG 書き出しで必ず確認すること。終了コードは ERROR があれば 1。
@@ -20,7 +22,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from taikenkai_slides import (  # noqa: E402
-    COVER_TITLE_RE, EVENT_DEFAULT, EVENT_SLIDE_RE, ISSUE_URL_RE, REPO, event_from_issue_body, template_body,
+    COVER_TITLE_RE, EVENT_DEFAULT, EVENT_SLIDE_RE, ISSUE_URL_RE, REPO, event_from_issue_body, instructor_body,
+    instructor_ids, instructors_from_issue_body, template_body,
 )
 import subprocess  # noqa: E402
 
@@ -31,7 +34,7 @@ DIRECTIVE_RE = re.compile(r"^<!--\s*_?\w+:.*-->$")
 BOLD_RE = re.compile(r"[\"」』）]\*\*[^ 　、。，．！？：；!?:;）」』\s]")
 KEYOP_RE = re.compile(r"\b(Shift|Ctrl|Cmd|Command|Alt|Option|Esc|Enter|Tab)\s*\+", re.I)
 # tkb（体験会デッキの本編）と併用すると崩れる／未対応のクラス（references/layouts.md「tkb」節）
-TKB_BROKEN = ("trend", "pair", "split", "refs", "src", "lead", "tk")
+TKB_BROKEN = ("trend", "pair", "split", "refs", "src", "lead", "tk", "prof")
 # tkb を付けずにそのまま使う本編スライド（APPENDIX の出典・注記）
 TKB_EXEMPT = ("src", "refs", "split")
 REPLACEABLE = (re.compile(r"^## 今後のイベントのお知らせ$"), re.compile(r"^## (\d{1,2}|○)月の主なシンラボ活動の紹介$"))
@@ -145,23 +148,66 @@ def check_front_matter(lines: list[str], path: Path) -> int:
     return end + 1
 
 
-def issue_event(deck_text: str, issue_file: str) -> tuple[str, str]:
-    """企画 Issue の「体験会名」欄を (値, 取得元) で返す。値が取れないときは ("", 照合できない理由)。"""
+_issue_cache: dict[str, tuple[str, str]] = {}
+
+
+def fetch_issue(deck_text: str, issue_file: str) -> tuple[str, str]:
+    """企画 Issue 本文を (本文, 取得元) で返す。取れないときは ("", 照合できない理由)。"""
     if issue_file:
-        value = event_from_issue_body(Path(issue_file).read_text(encoding="utf-8"))
-        return (value, issue_file) if value else ("", f"{issue_file} の「体験会名」欄が空")
+        return Path(issue_file).read_text(encoding="utf-8"), issue_file
     m = ISSUE_URL_RE.search(deck_text)
     if not m:
         return "", "表紙に企画 Issue の URL がない"
-    try:
-        body = subprocess.run(
-            ["gh", "issue", "view", m.group(1), "--repo", REPO, "--json", "body", "-q", ".body"],
-            capture_output=True, text=True, check=True, timeout=30,
-        ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-        return "", f"企画 Issue #{m.group(1)} を gh で取得できない"
+    if m.group(1) not in _issue_cache:
+        try:
+            body = subprocess.run(
+                ["gh", "issue", "view", m.group(1), "--repo", REPO, "--json", "body", "-q", ".body"],
+                capture_output=True, text=True, check=True, timeout=30,
+            ).stdout
+            _issue_cache[m.group(1)] = (body, f"企画 Issue #{m.group(1)}")
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+            _issue_cache[m.group(1)] = ("", f"企画 Issue #{m.group(1)} を gh で取得できない")
+    return _issue_cache[m.group(1)]
+
+
+def issue_event(deck_text: str, issue_file: str) -> tuple[str, str]:
+    """企画 Issue の「体験会名」欄を (値, 取得元) で返す。値が取れないときは ("", 照合できない理由)。"""
+    body, where = fetch_issue(deck_text, issue_file)
+    if not body:
+        return "", where
     value = event_from_issue_body(body)
-    return (value, f"企画 Issue #{m.group(1)}") if value else ("", f"企画 Issue #{m.group(1)} の「体験会名」欄が空")
+    return (value, where) if value else ("", f"{where} の「体験会名」欄が空")
+
+
+def check_instructors(slides: list[Slide], lead_idx: int, required: bool, deck_text: str, issue_file: str) -> set[int]:
+    """講師紹介スライド（prof）を検査し、講師紹介として扱った index を返す。表紙の直後に連続して置く。"""
+    templates = {i: norm(Slide(0, instructor_body(i).splitlines()).text) for i in instructor_ids()}
+    prof = [i for i, s in enumerate(slides) if "prof" in " ".join(s.classes()).split()]
+    run = []
+    k = lead_idx + 1
+    while k in prof:
+        run.append(k)
+        k += 1
+    for i in prof:
+        if i not in run:
+            err(f"L{slides[i].start}: 講師紹介（prof）は表紙の直後に置く（`taikenkai_slides.py wrap` が入れる位置）")
+    found = []
+    for i in run:
+        iid = next((t for t, txt in templates.items() if norm(slides[i].text) == txt), None)
+        if iid:
+            found.append(iid)
+        else:
+            err(f"L{slides[i].start}: 講師紹介が templates/instructor-*.md のどれとも一致しない"
+                "（内容を変えるときは templates/ 側を直して入れ直す）")
+    if not prof:
+        if required:
+            warn("講師紹介スライド（tk prof）が無い。企画 Issue の「講師」欄に講師ID を書き、`taikenkai_slides.py wrap` で入れる")
+        return set()
+    body, where = fetch_issue(deck_text, issue_file)
+    expected = instructors_from_issue_body(body) if body else []
+    if expected and len(run) == len(prof) and len(found) == len(run) and found != expected:
+        err(f"講師紹介 {found} が {where} の「講師」欄 {expected} と違う（欄の順で表紙の直後に置く）")
+    return set(prof)
 
 
 def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", issue_file: str = "") -> set[int]:
@@ -218,6 +264,8 @@ def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", is
             err(f"L{s.start}: closing 定型 {j + 1} 枚目（{tmpl_head[3:]}）が templates/taikenkai-closing.md と一致しない（文言改変・合体・欠落・`---` 漏れ）")
     # 表紙が無いデッキは check_slides が ERROR にするので、ここでは表紙の形を見ない（本編1枚目を表紙と誤認しないため）
     cover = check_cover(slides[lead_idx], required) if has_lead else None
+    prof = check_instructors(slides, lead_idx, required, deck_text, issue_file) if has_lead else set()
+    used |= prof
     if len(set(events)) > 1:
         err(f"体験会名が不一致：{sorted(set(events))}（アンケート・ご支援スライドの体験会名は opening・closing を通して同じ名前にそろえる）")
     elif events and cover and cover[1] != events[0]:
@@ -230,7 +278,7 @@ def check_taikenkai(slides: list[Slide], required: bool, deck_text: str = "", is
         elif not expected:
             warn(f"体験会名「{name}」を企画 Issue と照合できなかった（{where}）。--issue-file で Issue 本文を渡すと照合する")
     if required:
-        check_tkb(slides[lead_idx + 1:max(base, lead_idx + 1)])
+        check_tkb([s for i, s in enumerate(slides[:base]) if i > lead_idx and i not in prof])
     return used
 
 

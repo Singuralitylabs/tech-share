@@ -442,3 +442,22 @@ section.lead.tkt h1{ font-weight:500; font-size:96px; line-height:1.3; margin:0 
 section.lead.tkt .sub{ font-size:64px; font-weight:500; color:#fff; margin:0; }
 section.lead.tkt .org{ left:0; right:0; bottom:64px; font-size:42px; font-weight:500; letter-spacing:.04em; }
 section.lead.tkt .org::before{ display:none; }
+
+/* ---------- TK PROF (体験会デッキの講師紹介。templates/instructor-<講師ID>.md 専用) ----------
+   前回の体験会資料の「講師紹介」に合わせ、左に写真、右に名前と経歴を置く。`_class: tk prof` で使う。
+   写真は画像だけの段落（`![講師写真](../assets/instructors/<講師ID>.jpg)`）で書くと左の枠に収まる（縦長推奨。枠に合わせて切り抜かれる）。
+   右側は `### 名前` → 箇条書き（`出身：…` など。2行目以降はラベルの後ろにそろう）→ 最後の段落（略歴の本文）の順。 */
+section.tk.prof{ padding-left:500px; padding-right:56px; font-size:32px; line-height:1.55; }
+section.tk.prof h2{ margin-left:-454px; margin-right:-10px; }
+section.tk.prof p:has(> img:only-child){
+  position:absolute; left:46px; top:150px; bottom:44px; width:410px;
+  margin:0; text-align:left;
+}
+section.tk.prof p:has(> img:only-child) img{ width:100%; height:100%; max-height:none; object-fit:cover; object-position:center top; }
+section.tk.prof h3{ font-size:44px; font-weight:500; color:var(--ink); margin:4px 0 18px; letter-spacing:.06em; }
+section.tk.prof ul{ list-style:none; padding-left:0; margin:0; }
+section.tk.prof li{ margin:0 0 16px; padding-left:3em; text-indent:-3em; }
+section.tk.prof li:last-child{ margin-bottom:6px; }
+section.tk.prof p{ margin:0; }
+/* ページ番号も最低 18px（本編の tkb にそろえる） */
+section.tk.prof::after{ font-size:18px; }
