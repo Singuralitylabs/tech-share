@@ -10,6 +10,7 @@ ERROR は直してから起票する。WARN は候補なので、読んで直す
 見ること:
 - 必須の見出し（基本情報・事前案内・配布物・狙い・タイムテーブル・各パート・スライド構成・Marp 実装メモ・削ってよい）
 - 「体験会名」欄（taikenkai_slides.py wrap が読む。空欄・記入例のままだと転記が止まる）
+- 「講師」欄（講師ID。templates/instructor-<講師ID>.md が無い・空欄だと講師紹介の差し込みが止まる）
 - 発表日（YYYY-MM-DD、月曜か、過去日でないか）
 - 各パートの「ひとことスライド文言案」（デッキの見出しになる。空・長すぎ）
 - タイムテーブルの合計時間（「想定時間」欄と一致するか。欄が読めなければ原則の 60 分）と定型 15 分の行
@@ -36,6 +37,9 @@ REQUIRED_SECTIONS = [
 ]
 # taikenkai_slides.py の EVENT_ROW_RE と同じ形
 EVENT_ROW_RE = re.compile(r"^\|\s*体験会名\s*\|\s*(.*?)\s*\|\s*$", re.M)
+# taikenkai_slides.py の INSTRUCTOR_ROW_RE と同じ形
+INSTRUCTOR_ROW_RE = re.compile(r"^\|\s*講師\s*\|\s*(.*?)\s*\|\s*$", re.M)
+TEMPLATES_DIR = Path(__file__).resolve().parents[4] / "templates"
 DATE_ROW_RE = re.compile(r"^\|\s*発表日\s*\|\s*(.*?)\s*\|\s*$", re.M)
 # tkb の見出し（44px）が 1 行に収まる目安。全角 1・半角 0.5 で数える
 # （decks/20261102_skills.md の最長「いつも守ることは CLAUDE.md、作業の手順はスキル」が 23）
@@ -119,6 +123,18 @@ def check_basic(sec: str, today: dt.date) -> None:
             "デッキ転記の taikenkai_slides.py wrap がここを読む）")
     elif value.endswith("体験会"):
         warn(f"基本情報：体験会名「{value}」の末尾の「体験会」は不要（表紙は「<体験会名> 体験会」になるため二重になる）")
+
+    m = INSTRUCTOR_ROW_RE.search(sec)
+    value = re.sub(r"<!--.*?-->", "", m.group(1)).strip() if m else ""
+    available = sorted(p.stem[len("instructor-"):] for p in TEMPLATES_DIR.glob("instructor-*.md"))
+    if not value or value.startswith("例") or "〈" in value:
+        err("基本情報：「講師」が空欄・記入例のまま（`| 講師 | yamada |` の形で講師ID を書く。複数人はカンマ区切り。"
+            f"用意済み：{', '.join(available) or 'なし'}）")
+    else:
+        for iid in (v.strip().strip("`") for v in re.split(r"[,、，\s]+", value)):
+            if iid and iid not in available:
+                err(f"基本情報：講師「{iid}」の講師紹介スライド templates/instructor-{iid}.md が無い"
+                    f"（用意済み：{', '.join(available) or 'なし'}。新しい講師なら先に作ってもらう）")
 
     m = DATE_ROW_RE.search(sec)
     raw = m.group(1).strip() if m else ""

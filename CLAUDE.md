@@ -15,11 +15,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `decks/YYYYMMDD_*.gslides.md` — **[k1LoW/deck](https://github.com/k1LoW/deck) 用デッキ**（Google スライド出力）。Marp 版とは**別物**なので混同しないこと。記法が違い（`_class` や `theme` は無く、レイアウトは `<!-- {"layout": "..."} -->`）、`themes/singularity.css` も効かない。デザインは Google スライド側のテーマ／レイアウトマスターが持つ。セットアップと運用は `docs/google-slides.md` を参照。**`deck apply` は Markdown に無いスライドを削除する**ので、Slides 側にだけ足したページは消える（詳細は手順書参照）。
 - `build/` — **生成物の置き場**。`-o` で明示的にここへ書き出す。git 管理外。
 - `docs/` — **リポジトリの手順書置き場**（`google-slides.md` など）。発表ごとの企画書はここには置かない。
-- `templates/` — **体験会用の定型スライド群**（`taikenkai-opening.md`＝表紙直前用、`taikenkai-closing.md`＝末尾用）。企画 Issue に `体験会` ラベルが付いたデッキでは転記が**必須**（下記「体験会デッキの必須スライド」）。`decks/` に置かないのは、日付付きデッキやライブプレビュー（`-s decks`）の対象と混ざるのを避けるため。
+- `templates/` — **体験会用の定型スライド群**（`taikenkai-opening.md`＝表紙直前用、`taikenkai-closing.md`＝末尾用）と、**講師ごとの講師紹介スライド**（`instructor-<講師ID>.md`＝表紙直後用。下記「講師紹介スライド」）。企画 Issue に `体験会` ラベルが付いたデッキでは転記が**必須**（下記「体験会デッキの必須スライド」）。`decks/` に置かないのは、日付付きデッキやライブプレビュー（`-s decks`）の対象と混ざるのを避けるため。
 - `themes/singularity.css` — **共有 Marp テーマ**。全デッキのデザイン（配色・レイアウトクラス・ロゴ・表紙背景）はここに集約されている。詳細は下記「テーマ」。
 - `.marprc.yml` — Marp CLI 設定。`themeSet: ["./themes"]` によりテーマを自動登録し、`theme: singularity` を解決する。`allowLocalFiles: true` も設定済み。**`inputDir` は意図的に設定していない**（理由は下記「ハマりどころ」）。
 - `.vscode/settings.json` — VS Code / Cursor の Marp 拡張向け。テーマ登録（`markdown.marp.themes`）と `markdown.marp.html: true`（インライン HTML 有効化）。
-- `assets/` — テーマ画像の元データ（`logo.png`, `title-bg.png`。テーマにはデータ URI 埋め込み済みで、レンダリング時には参照されない）と、体験会定型スライドの図（`assets/taikenkai/`。QR・写真・スクリーンショット。`templates/` から相対パスで参照する）。
+- `assets/` — テーマ画像の元データ（`logo.png`, `title-bg.png`。テーマにはデータ URI 埋め込み済みで、レンダリング時には参照されない）と、体験会定型スライドの図（`assets/taikenkai/`。QR・写真・スクリーンショット。`templates/` から相対パスで参照する）、講師の写真（`assets/instructors/<講師ID>.jpg`。未用意の講師は `placeholder.jpg`）。
 
 デザインの元になった社内フォーマット（`スライドフォーマット.pdf`）は、`themes/singularity.css` への取り込みが完了したため削除済み。必要になったら Git 履歴（初回コミット）から取り出せる。旧運用の `docs/YYYYMMDD_*.md`（企画書）も Issue へ移設のうえ削除済みで、原文は Git 履歴から取り出せる。
 
@@ -33,6 +33,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. **デッキを作る**：`decks/YYYYMMDD_<topic>.md`（`YYYYMMDD` は発表日）を作成し、front matter に `theme: singularity` と書く。レイアウトは `_class` で指定する（インライン `<style>` は不要）。企画 Issue が `体験会` ラベル付きなら、`templates/taikenkai-opening.md` の定型スライド群を**表紙（`_class: lead`）スライドの前**（front matter の直後）に、`templates/taikenkai-closing.md` の定型スライド群を**デッキの最後**に転記する（詳細・注意点は下記「体験会デッキの必須スライド」）。
 3. **紐付ける**：表紙スライドのコメントの先頭に `企画 Issue：https://github.com/Singuralitylabs/tech-share/issues/N` を書き、Issue 本文の「デッキ」欄にもデッキのパスを書き戻す。
 4. **転記する**：企画の「話すポイント」「補足メモ」を各スライド末尾の発表者ノート（HTML コメント）に落とす。**Issue を参照しないと分からない状態にしない**。
+   体験会デッキでは、企画 Issue「講師」欄の講師の講師紹介スライド（`templates/instructor-<講師ID>.md`）を**表紙の直後**に入れる（下記「講師紹介スライド」。`wrap` が定型スライドと一緒に入れる）。
 5. **確認する**：PNG 書き出しで全スライドのはみ出しを目視確認する（下記「コマンド」）。
 6. **閉じる**：コミット / PR 本文に `Closes #N` を書いて企画 Issue をクローズする。
 
@@ -57,6 +58,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - テンプレート側の front matter（`theme: singularity` など）は各ファイル単体のプレビュー用なので転記しない。
 
 定型スライドの内容を変えたいときはデッキ側ではなく `templates/` のファイルを直す（次回以降のデッキに反映される。転記済みデッキには自動反映されない点に注意）。
+
+### 講師紹介スライド（`体験会` ラベル）
+
+講師は回ごとに変わるので、講師紹介スライドは**講師ごとに1ファイル**用意しておき、企画 Issue で指定された講師のものを差し込む。
+
+- **置き場所**：`templates/instructor-<講師ID>.md`（講師ID は英小文字・数字・ハイフン。例：`yamada`）。写真は `assets/instructors/<講師ID>.jpg`（縦長推奨。左の枠に合わせて上寄せで切り抜かれる）。`templates/instructors/` のようなサブフォルダにしないのは、画像の相対パス `../assets/` を `decks/` と同じにして、転記時に書き換えずに済ませるため。
+- **指定**：企画 Issue 本文「基本情報」表の「**講師**」欄に講師ID を書く（複数人はカンマ区切り。書いた順に並ぶ）。
+- **差し込み**：`scripts/taikenkai_slides.py wrap <deck>` が「講師」欄を読み、**表紙（`lead tkt`）の直後**に入れる（`--instructor ID` で直接指定も可）。欄が空、または講師ID のファイルが無いと止まる。定型スライドが転記済みのデッキでも、講師紹介がまだ無ければ講師紹介だけ入れる。
+- **レイアウト**：`tk prof`（左に写真、右に `### 名前` → 箇条書き〈出身・職業・略歴〉→ 略歴の段落）。定型スライドと同じく**文言を改変せずに**入れ、内容を変えるときは `templates/instructor-<講師ID>.md` 側を直す。ページ番号は本編と同じく表示する（`_paginate: skip` は付けない）。
+- **新しい講師を足す**：`templates/instructor-yamada.md` をコピーして文言を書き換え、写真を置く。`scripts/taikenkai_slides.py instructors` で用意済みの講師ID を一覧できる。
 
 ## コマンド
 
@@ -98,7 +109,7 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 - 先頭は `/* @theme singularity */` ＋ `@import 'default';`。**default テーマを継承**しているので、ページ番号などの基本挙動と、default（GitHub-markdown）由来の高詳細度な表・引用 CSS の両方が入る。後者に勝つため、表・引用の色/背景の上書きには **`!important` が必要**（意図的）。
 - 配色：白 `#f9fafc`、濃紺→シアンのグラデ `#014e94 → #66c5d2`、太字＝濃紺。フォント：Noto Sans JP ＋ Inter。
 - **PDF の 3 レイアウトがスライドの役割に対応**：1枚目（ローポリ表紙）→ 表紙、2枚目（白＋グラデ罫線＋ロゴ）→ 本文・クロージング、3枚目（右側の青グラデパネル）→ 最後／参考スライド。
-- **レイアウトはスライドごとに `<!-- _class: ... -->` で指定**し、テーマ内の `section.<class>` で装飾する。クラス：`lead`（表紙。低ポリ背景を内包）、`stat`（大きな数字）、`trend`（シェア推移レール）、`flow`（連番ステップ図）、`grid`（2×2 カード）、`ba`（ビフォー/アフター表）、`center`（中央寄せ引用）、`refs`（参考）、`dense`（手順スライド用。`pre` と引用を詰めて行数を稼ぐ）、`split`（右グラデパネル。併用可、例：`_class: refs split`）、`pair`（本文＋右の図/QR。広い図は `pair wide`）、`tk`（**体験会定型スライド専用**。前回の Google スライド資料の見た目に寄せる：上寄せ・大きめの文字・左端からの見出し罫線。`tk pair` / `tk pair wide` / `tk msg`（中央に大きな一文）/ `tk sns`（SNS 表）/ `tk big`（箇条書きだけのスライド。文字・行間を広げる）/ `tk lg`（文章が長めのスライド。big より一段小さい。`tk pair lg` は右に図があるとき用）で使う。ロゴも本文スライドより大きい（68px）。本編スライドには付けない）、`tkb`（**体験会デッキの本編スライド用**。ロゴ 68px・見出しの位置と大きさ・左端からの罫線を `tk` にそろえ、見出しは上端、本文は残りの高さの中で縦中央に置く。本文 37px（`dense` は 31px）、ヘッダー・フッター・ページ番号も含めて**文字は最低 18px**。行数の多いコードを載せる手順スライドは `tkb dense long`（コード 19px）。`tkb grid` / `tkb dense` のように**レイアウトクラスと併用**し、`_class` は front matter の `class` と合成されないので本編の各スライドに付ける。PART ラベル（`_header`）は見出しの上に置かれる）、`lead tkt`（**体験会デッキの表紙**。前回資料の表紙に合わせて中央寄せ。`# <体験会名> 体験会` と `<p class="sub">その回のテーマ</p>`、`<p class="org">シンギュラリティ・ラボ</p>` で書く）。複数クラスは半角スペース区切り。
+- **レイアウトはスライドごとに `<!-- _class: ... -->` で指定**し、テーマ内の `section.<class>` で装飾する。クラス：`lead`（表紙。低ポリ背景を内包）、`stat`（大きな数字）、`trend`（シェア推移レール）、`flow`（連番ステップ図）、`grid`（2×2 カード）、`ba`（ビフォー/アフター表）、`center`（中央寄せ引用）、`refs`（参考）、`dense`（手順スライド用。`pre` と引用を詰めて行数を稼ぐ）、`split`（右グラデパネル。併用可、例：`_class: refs split`）、`pair`（本文＋右の図/QR。広い図は `pair wide`）、`tk`（**体験会定型スライド専用**。前回の Google スライド資料の見た目に寄せる：上寄せ・大きめの文字・左端からの見出し罫線。`tk pair` / `tk pair wide` / `tk msg`（中央に大きな一文）/ `tk sns`（SNS 表）/ `tk big`（箇条書きだけのスライド。文字・行間を広げる）/ `tk lg`（文章が長めのスライド。big より一段小さい。`tk pair lg` は右に図があるとき用）で使う。ロゴも本文スライドより大きい（68px）。本編スライドには付けない）、`tkb`（**体験会デッキの本編スライド用**。ロゴ 68px・見出しの位置と大きさ・左端からの罫線を `tk` にそろえ、見出しは上端、本文は残りの高さの中で縦中央に置く。本文 37px（`dense` は 31px）、ヘッダー・フッター・ページ番号も含めて**文字は最低 18px**。行数の多いコードを載せる手順スライドは `tkb dense long`（コード 19px）。`tkb grid` / `tkb dense` のように**レイアウトクラスと併用**し、`_class` は front matter の `class` と合成されないので本編の各スライドに付ける。PART ラベル（`_header`）は見出しの上に置かれる）、`tk prof`（**講師紹介スライド専用**。`templates/instructor-<講師ID>.md` で使う。左に写真、右に名前・経歴）、`lead tkt`（**体験会デッキの表紙**。前回資料の表紙に合わせて中央寄せ。`# <体験会名> 体験会` と `<p class="sub">その回のテーマ</p>`、`<p class="org">シンギュラリティ・ラボ</p>` で書く）。複数クラスは半角スペース区切り。
 - **縦位置**：default テーマは `display:block` ＋ `place-content:safe center center` で本文を縦中央に寄せている（flex ではない）。上寄せにしたいクラスは `justify-content` ではなく `place-content:start` で戻す（`tk` がこの方式）。
 - **コード表示**：`code`（インライン＝薄グレー地に濃紺）と `pre`（ブロック＝濃紺地に白抜き＝ターミナル風）をテーマ側で定義済み。default テーマの GitHub-markdown 由来 CSS に勝つため `!important` が必要（表・引用と同じ事情）。言語タグ付き（```` ```json ```` など）のシンタックスハイライトは、default テーマが明るい背景向けの `--color-prettylights-syntax-*` を当てて濃紺地で読めなくなるため、`pre` の中だけ暗い背景向けの値に差し替えてある。`pre` は「参加者がそのまま打つコマンド」に見えるので、**キー操作（`Shift + Tab` など）を `pre` で書かない**（打ち込むものと誤解される）。引用か太字で表す。
 - **`section.src` に表を置くときは注意**。`table{font-size:20px}` が `section.src{font-size:15px}` の継承に勝つため、テーマ側で `section.src table` を明示的に 15px に落としてある。同様の衝突は他のクラスでも起こりうる。
@@ -113,7 +124,7 @@ npx @marp-team/marp-cli --no-stdin --images png decks/20260715_ai-trend.md -o /t
 - **表紙スライドのコメント先頭に企画 Issue の URL** を書く（デッキ → 企画の導線）。
 - 企画 Issue の「ひとことスライド文言案」を `##` の見出しに使い、各スライドは要点 3〜4 項目に圧縮、1 枚 1 メッセージ。
 - パートの見出しは `<!-- _header: 'PART 0X · ラベル' -->`、発表者ノート（企画 Issue の話すポイント）は各スライド末尾の `<!-- ... -->` コメントに置く。
-- 企画 Issue に `体験会` ラベルが付いているデッキは、`templates/` の定型スライド群（冒頭・末尾）の転記が必須（上記「体験会デッキの必須スライド」）。
+- 企画 Issue に `体験会` ラベルが付いているデッキは、`templates/` の定型スライド群（冒頭・末尾）の転記が必須（上記「体験会デッキの必須スライド」）。講師紹介スライドも「講師」欄の講師のものを表紙の直後に入れる（上記「講師紹介スライド」）。
 - `.claude/skills/taikenkai-plan-issue/` は体験会の企画 Issue を起票する手順スキル（上記「体験会の企画 Issue を作る」）。本文の規約チェックは `scripts/check_plan.py <下書き.md>`。
 - `.claude/skills/tech-share-deck/` は企画 Issue → デッキ作成の手順スキル。体験会の定型スライド転記は `scripts/taikenkai_slides.py wrap <deck>`、規約チェックは `scripts/check_deck.py <deck> [--taikenkai]` で行える（手作業の転記・確認の代わりに使ってよい）。
 - `marp-slide` スキル（softaworks/agent-toolkit）は導入済みだが、雛形生成の補助であり、デザインは常に共有テーマ側で管理する。

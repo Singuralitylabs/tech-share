@@ -15,6 +15,11 @@
       "id": 4,
       "prompt": "Issue #2 の企画からデッキを作って",
       "expected_output": "decks/20260907_deploy-web.md。体験会定型を転記し、表紙は `lead tkt`（`# <体験会名> 体験会` の見出しに企画 Issue「体験会名」欄と同じ名前、`<p class=\"sub\">` にその回のテーマ、日付の kicker なし）。本編の各スライド（OVERVIEW・CLOSING を含む。APPENDIX の src / refs split は除く）に `tkb` がレイアウトクラスと1行で付き、`tkb` と trend / pair / split を併用していない。`check_deck.py --taikenkai` で表紙・tkb の WARN なし。差し替え欄（今後のイベント・○月の活動）は推測で書かず、ユーザーに確認するか、テンプレートのまま残して未更新と明示する。"
+    },
+    {
+      "id": 5,
+      "prompt": "Issue #N（体験会ラベル付き、「講師」欄は yamada）からデッキを作って。",
+      "expected_output": "表紙 lead tkt の直後に templates/instructor-yamada.md の講師紹介（tk prof）が文言そのままで1枚入る（taikenkai_slides.py wrap で差し込み、手で書かない）。講師紹介は本編扱いせず tkb を付けない。check_deck.py --taikenkai --issue-file で講師紹介の ERROR/WARN が出ない。報告で講師名と、写真がプレースホルダーのままかを伝える。「講師」欄が空・未知の講師ID なら推測で作らずユーザーに確認する。"
     }
   ],
   "note": "入力はリポジトリの企画 Issue（#2, #4, #13）を GitHub MCP で読む前提。Issue は後から編集されるため、期待出力は作成時点のもの。 体験会デッキ（id 1, 4）の表紙・本編クラスは decks/20261102_skills.md（lead tkt / tkb の適用例）にそろえる。既存の 20261005・20260907 は lead tkt / tkb 導入前の作成なので、期待出力とは一致しない。"
