@@ -17,6 +17,7 @@ ERROR は直してから起票する。WARN は候補なので、読んで直す
 - スライド構成の枚数の合計と、tkb と併用できないクラス
 - 骨組みの記入欄（〈〉）・テンプレートの空欄（○分・「」など）の残り
 - 前回前提の構成（前回のおさらい など）
+- イベント紹介文（イベントサイトに貼るコードブロック。空でないか、発表日と「見ているだけでOK」が入っているか）
 """
 from __future__ import annotations
 
@@ -28,6 +29,7 @@ from pathlib import Path
 REQUIRED_SECTIONS = [
     "基本情報",
     "事前案内・配布物",
+    "イベント紹介文",
     "狙い・通しのメッセージ",
     "タイムテーブル",
     "各パート",
@@ -93,6 +95,20 @@ def sections(text: str) -> dict[str, str]:
     for i in range(1, len(parts), 2):
         out[parts[i].strip()] = parts[i + 1]
     return out
+
+
+def raw_section(text: str, name: str) -> str:
+    """`## name` の本文を、コードブロックの中身を残したまま返す。
+    見出しの位置は strip_fences 後の行で決める（コードブロック内の `## ` で切らないため）。"""
+    raw, stripped = text.split("\n"), strip_fences(text).split("\n")
+    start = None
+    for i, line in enumerate(stripped):
+        if re.match(r"## +", line):
+            if start is not None:
+                return "\n".join(raw[start:i])
+            if line[3:].strip() == name:
+                start = i + 1
+    return "\n".join(raw[start:]) if start is not None else ""
 
 
 def table_rows(block: str) -> list[list[str]]:
@@ -246,6 +262,29 @@ def check_slides(sec: str) -> None:
         warn(f"スライド構成：合計 {total_row} 枚と各行の和 {total} 枚が合わない（デッキ作成時は内訳が優先される）")
 
 
+FENCE_BLOCK_RE = re.compile(r"(?ms)^\s*(`{3,}|~{3,})[^\n]*\n(.*?)^\s*\1\s*$")
+WATCH_ONLY_RE = re.compile(r"見る(だけ|のみ)|見ている?だけ|見学")
+
+
+def check_intro(sec: str, basic: str) -> None:
+    """イベント紹介文：コードブロック（そのまま貼る文面）があるか、発表日と見るだけOKが入っているか。
+    sec は strip_fences する前の本文（コードブロックの中身を読むため）。"""
+    m = FENCE_BLOCK_RE.search(sec)
+    body = m.group(2).strip() if m else ""
+    if not body:
+        err("イベント紹介文：イベントサイトに貼る文面のコードブロック（```text … ```）が無い・空")
+        return
+    d = DATE_ROW_RE.search(basic)
+    try:
+        day = dt.date.fromisoformat(d.group(1).strip()) if d else None
+    except ValueError:
+        day = None
+    if day and not re.search(rf"(?<!\d){day.month}\s*[/／月]\s*{day.day}(?!\d)", body):
+        warn(f"イベント紹介文：発表日（{day.month}/{day.day}）が文面に無い")
+    if not WATCH_ONLY_RE.search(body):
+        warn("イベント紹介文：「準備が間に合わない方も、見ているだけで参加できます」の旨が無い")
+
+
 def check_text(text: str) -> None:
     for no, line in enumerate(text.splitlines(), 1):
         if "〈" in line and "〉" in line:
@@ -281,6 +320,8 @@ def main() -> None:
         check_parts(secs["各パート"])
     if "スライド構成" in secs:
         check_slides(secs["スライド構成"])
+    if "イベント紹介文" in secs:
+        check_intro(raw_section(text, "イベント紹介文"), secs.get("基本情報", ""))
     check_text(text)
 
     for m in errors:
