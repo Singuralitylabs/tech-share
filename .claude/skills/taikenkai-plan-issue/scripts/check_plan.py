@@ -8,7 +8,7 @@ ERROR は直してから起票する。WARN は候補なので、読んで直す
 終了コードは ERROR があれば 1、なければ 0。
 
 見ること:
-- 必須の見出し（基本情報・事前案内・配布物・狙い・タイムテーブル・各パート・スライド構成・Marp 実装メモ・削ってよい）
+- 必須の見出し（基本情報・事前案内・配布物・イベント紹介文・狙い・タイムテーブル・各パート・スライド構成・Marp 実装メモ・削ってよい）
 - 「体験会名」欄（taikenkai_slides.py wrap が読む。空欄・記入例のままだと転記が止まる）
 - 「講師」欄（講師ID。templates/instructor-<講師ID>.md が無い・空欄だと講師紹介の差し込みが止まる）
 - 発表日（YYYY-MM-DD、月曜か、過去日でないか）
@@ -24,6 +24,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 REQUIRED_SECTIONS = [
@@ -262,15 +263,30 @@ def check_slides(sec: str) -> None:
         warn(f"スライド構成：合計 {total_row} 枚と各行の和 {total} 枚が合わない（デッキ作成時は内訳が優先される）")
 
 
-FENCE_BLOCK_RE = re.compile(r"(?ms)^\s*(`{3,}|~{3,})[^\n]*\n(.*?)^\s*\1\s*$")
-WATCH_ONLY_RE = re.compile(r"見る(だけ|のみ)|見ている?だけ|見学")
+def fence_bodies(text: str) -> list[str]:
+    """フェンス付きコードブロックの中身を順に返す（開き・閉じの判定は strip_fences と同じ）。"""
+    out, fence, buf = [], "", []
+    for line in text.split("\n"):
+        m = re.match(r"\s*(`{3,}|~{3,})", line)
+        if fence:
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not line.strip()[len(m.group(1)):]:
+                out.append("\n".join(buf))
+                fence, buf = "", []
+            else:
+                buf.append(line)
+        elif m:
+            fence = m.group(1)
+    return out
+
+
+WATCH_ONLY_RE = re.compile(r"見(る|て(い)?る)(だけ|のみ)|視聴(だけ|のみ)|ご?覧(いただく|になる)(だけ|のみ)|見学")
 
 
 def check_intro(sec: str, basic: str) -> None:
     """イベント紹介文：コードブロック（そのまま貼る文面）があるか、発表日と見るだけOKが入っているか。
     sec は strip_fences する前の本文（コードブロックの中身を読むため）。"""
-    m = FENCE_BLOCK_RE.search(sec)
-    body = m.group(2).strip() if m else ""
+    bodies = [x.strip() for x in fence_bodies(sec) if x.strip()]
+    body = unicodedata.normalize("NFKC", bodies[-1]) if bodies else ""  # 全角数字・／を半角に
     if not body:
         err("イベント紹介文：イベントサイトに貼る文面のコードブロック（```text … ```）が無い・空")
         return
@@ -279,7 +295,8 @@ def check_intro(sec: str, basic: str) -> None:
         day = dt.date.fromisoformat(d.group(1).strip()) if d else None
     except ValueError:
         day = None
-    if day and not re.search(rf"(?<!\d){day.month}\s*[/／月]\s*{day.day}(?!\d)", body):
+    if day and not (re.search(rf"(?<!\d)0?{day.month}\s*[/月]\s*0?{day.day}(?!\d)", body)
+                    or day.isoformat() in body):
         warn(f"イベント紹介文：発表日（{day.month}/{day.day}）が文面に無い")
     if not WATCH_ONLY_RE.search(body):
         warn("イベント紹介文：「準備が間に合わない方も、見ているだけで参加できます」の旨が無い")
