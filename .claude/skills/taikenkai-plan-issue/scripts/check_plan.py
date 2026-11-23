@@ -8,7 +8,7 @@ ERROR は直してから起票する。WARN は候補なので、読んで直す
 終了コードは ERROR があれば 1、なければ 0。
 
 見ること:
-- 必須の見出し（基本情報・事前案内・配布物・狙い・タイムテーブル・各パート・スライド構成・Marp 実装メモ・削ってよい）
+- 必須の見出し（基本情報・事前案内・配布物・イベント紹介文・狙い・タイムテーブル・各パート・スライド構成・Marp 実装メモ・削ってよい）
 - 「体験会名」欄（taikenkai_slides.py wrap が読む。空欄・記入例のままだと転記が止まる）
 - 「講師」欄（講師ID。templates/instructor-<講師ID>.md が無い・空欄だと講師紹介の差し込みが止まる）
 - 発表日（YYYY-MM-DD、月曜か、過去日でないか）
@@ -17,17 +17,20 @@ ERROR は直してから起票する。WARN は候補なので、読んで直す
 - スライド構成の枚数の合計と、tkb と併用できないクラス
 - 骨組みの記入欄（〈〉）・テンプレートの空欄（○分・「」など）の残り
 - 前回前提の構成（前回のおさらい など）
+- イベント紹介文（イベントサイトに貼るコードブロック。空でないか、発表日と「見ているだけでOK」が入っているか）
 """
 from __future__ import annotations
 
 import datetime as dt
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 REQUIRED_SECTIONS = [
     "基本情報",
     "事前案内・配布物",
+    "イベント紹介文",
     "狙い・通しのメッセージ",
     "タイムテーブル",
     "各パート",
@@ -93,6 +96,20 @@ def sections(text: str) -> dict[str, str]:
     for i in range(1, len(parts), 2):
         out[parts[i].strip()] = parts[i + 1]
     return out
+
+
+def raw_section(text: str, name: str) -> str:
+    """`## name` の本文を、コードブロックの中身を残したまま返す。
+    見出しの位置は strip_fences 後の行で決める（コードブロック内の `## ` で切らないため）。"""
+    raw, stripped = text.split("\n"), strip_fences(text).split("\n")
+    start = None
+    for i, line in enumerate(stripped):
+        if re.match(r"## +", line):
+            if start is not None:
+                return "\n".join(raw[start:i])
+            if line[3:].strip() == name:
+                start = i + 1
+    return "\n".join(raw[start:]) if start is not None else ""
 
 
 def table_rows(block: str) -> list[list[str]]:
@@ -246,6 +263,45 @@ def check_slides(sec: str) -> None:
         warn(f"スライド構成：合計 {total_row} 枚と各行の和 {total} 枚が合わない（デッキ作成時は内訳が優先される）")
 
 
+def fence_bodies(text: str) -> list[str]:
+    """フェンス付きコードブロックの中身を順に返す（開き・閉じの判定は strip_fences と同じ）。"""
+    out, fence, buf = [], "", []
+    for line in text.split("\n"):
+        m = re.match(r"\s*(`{3,}|~{3,})", line)
+        if fence:
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not line.strip()[len(m.group(1)):]:
+                out.append("\n".join(buf))
+                fence, buf = "", []
+            else:
+                buf.append(line)
+        elif m:
+            fence = m.group(1)
+    return out
+
+
+WATCH_ONLY_RE = re.compile(r"見(る|て(い)?る|ていただく|ていただける)(だけ|のみ)|聞(く|いている|いてる)(だけ|のみ)|視聴(だけ|のみ)|ご?覧(いただく|になる)(だけ|のみ)|見学")
+
+
+def check_intro(sec: str, basic: str) -> None:
+    """イベント紹介文：コードブロック（そのまま貼る文面）があるか、発表日と見るだけOKが入っているか。
+    sec は strip_fences する前の本文（コードブロックの中身を読むため）。"""
+    bodies = [x.strip() for x in fence_bodies(sec) if x.strip()]
+    body = unicodedata.normalize("NFKC", "\n".join(bodies))  # 全ブロックをつなげる。全角数字・／を半角に
+    if not body:
+        err("イベント紹介文：イベントサイトに貼る文面のコードブロック（```text … ```）が無い・空")
+        return
+    d = DATE_ROW_RE.search(basic)
+    try:
+        day = dt.date.fromisoformat(d.group(1).strip()) if d else None
+    except ValueError:
+        day = None
+    if day and not (re.search(rf"(?<!\d)0?{day.month}\s*[/月]\s*0?{day.day}(?!\d)", body)
+                    or day.isoformat() in body):
+        warn(f"イベント紹介文：発表日（{day.month}/{day.day}）が文面に無い")
+    if not WATCH_ONLY_RE.search(body):
+        warn("イベント紹介文：「準備が間に合わない方も、見ているだけで参加できます」の旨が無い")
+
+
 def check_text(text: str) -> None:
     for no, line in enumerate(text.splitlines(), 1):
         if "〈" in line and "〉" in line:
@@ -281,6 +337,8 @@ def main() -> None:
         check_parts(secs["各パート"])
     if "スライド構成" in secs:
         check_slides(secs["スライド構成"])
+    if "イベント紹介文" in secs:
+        check_intro(raw_section(text, "イベント紹介文"), secs.get("基本情報", ""))
     check_text(text)
 
     for m in errors:
