@@ -279,14 +279,14 @@ def fence_bodies(text: str) -> list[str]:
     return out
 
 
-WATCH_ONLY_RE = re.compile(r"見(る|て(い)?る)(だけ|のみ)|視聴(だけ|のみ)|ご?覧(いただく|になる)(だけ|のみ)|見学")
+WATCH_ONLY_RE = re.compile(r"見(る|て(い)?る|ていただく|ていただける)(だけ|のみ)|聞(く|いている|いてる)(だけ|のみ)|視聴(だけ|のみ)|ご?覧(いただく|になる)(だけ|のみ)|見学")
 
 
 def check_intro(sec: str, basic: str) -> None:
     """イベント紹介文：コードブロック（そのまま貼る文面）があるか、発表日と見るだけOKが入っているか。
     sec は strip_fences する前の本文（コードブロックの中身を読むため）。"""
     bodies = [x.strip() for x in fence_bodies(sec) if x.strip()]
-    body = unicodedata.normalize("NFKC", bodies[-1]) if bodies else ""  # 全角数字・／を半角に
+    body = unicodedata.normalize("NFKC", "\n".join(bodies))  # 全ブロックをつなげる。全角数字・／を半角に
     if not body:
         err("イベント紹介文：イベントサイトに貼る文面のコードブロック（```text … ```）が無い・空")
         return
