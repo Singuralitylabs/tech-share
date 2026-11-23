@@ -1,0 +1,24 @@
+<link rel=stylesheet href=base.css>
+<style>.pane{width:470px;height:390px;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.term{background:#0f2238;color:#e8eef5;border-radius:10px;padding:14px 16px;font-size:20px;text-align:left;line-height:1.5}
+.term .p{color:#66c5d2}
+.hd{font-size:26px;font-weight:700}
+.win{border:3px solid #014e94;border-radius:10px;background:#fff;overflow:hidden;text-align:left}
+.bar{background:#dfe8f1;padding:6px 10px;font-size:19px;color:#3a4a5c}
+.pg{padding:16px 18px}
+.pg b{font-size:24px}
+.pg div{font-size:19px;color:#5a6b7d;margin-top:6px}
+.tag{position:absolute;right:14px;top:10px;font-size:16px;color:#8a8a8a}</style>
+<div class="pane ng" style="border:3px solid #d0d0d0;background:#f6f6f6;color:#555;position:relative">
+ <div class=hd>道具なし（STEP 2）</div>
+ <div class=term><span class=p>&gt;</span> example.com をブラウザで開いて、<br>　タイトルを教えて。スクショも撮って</div>
+ <div class=term style="background:#2b3a4b">⚠ ブラウザは開けません／<br>　ページの文字を読むだけ</div>
+ <div style="font-size:24px;margin-top:auto">🌐 ブラウザは開かない</div>
+</div>
+<div class=col style="align-items:center;gap:6px"><div class=arrow>▶</div><div class=label style="white-space:nowrap">イメージ</div></div>
+<div class="pane" style="border:3px solid #014e94;background:#f2f6fa;position:relative">
+ <div class=hd style="color:#014e94">道具あり（STEP 4）</div>
+ <div class=term><span class=p>&gt;</span> （同じ依頼）<br><span class=p>●</span> playwright の道具を使います…</div>
+ <div class=win><div class=bar>● ● ●　https://example.com</div><div class=pg><b>Example Domain</b><div>AIがブラウザを開いて、画面を撮る</div></div></div>
+ <div style="font-size:24px;font-weight:700;color:#014e94;margin-top:auto">✅ ブラウザが開いて、AIが操作</div>
+</div>
