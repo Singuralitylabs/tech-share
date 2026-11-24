@@ -42,7 +42,7 @@ lang: ja
 
 <!--
 アンケートURL（チャット貼り付け用）：
-https://docs.google.com/forms/d/e/1FAIpQLSfJlSsAqvXaS6id-DIRjz9EIsMUYUnYBdpsrXkd1kOEt1i9-Q/viewform?usp=header
+https://forms.gle/ifMFrJ2DjvEQbpdN9
 回答者に本スライドを送る旨を口頭でも添える。
 -->
 
