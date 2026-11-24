@@ -37,7 +37,7 @@ KEYOP_RE = re.compile(r"\b(Shift|Ctrl|Cmd|Command|Alt|Option|Esc|Enter|Tab)\s*\+
 TKB_BROKEN = ("trend", "pair", "split", "refs", "src", "lead", "tk", "prof")
 # tkb を付けずにそのまま使う本編スライド（APPENDIX の出典・注記）
 TKB_EXEMPT = ("src", "refs", "split")
-REPLACEABLE = (re.compile(r"^## 今後のイベントのお知らせ$"), re.compile(r"^## (\d{1,2}|○)月の主なシンラボ活動の紹介$"))
+REPLACEABLE = (re.compile(r"^## 今後のイベントのお知らせ$"), re.compile(r"^## 今日の続きは「Sinlab Study」で$"))
 
 errors: list[str] = []
 warns: list[str] = []
