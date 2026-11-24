@@ -19,12 +19,16 @@ lang: ja
 - 画像パス `../assets/taikenkai/` は `templates/` からも `decks/` からも同じ相対位置なので、転記時に書き換えない。
 - この front matter はこのファイル単体をプレビューするためのもの。デッキへは転記しない。
 - 冒頭用の定型スライドは `templates/taikenkai-opening.md`（別ファイル）。
-- 並びは前回の体験会資料どおり：アンケート → ご支援 → 今後のイベント → シンラボ紹介 → 会費・注意 → フリー会員 → 最後に →
-  空白の青スライド（区切り）→ 付録「Sinlab Knowledge」。付録もこのファイルに含めて最後に置く。
+- 並び：アンケート → ご支援 → 今後のイベント → Sinlab Study（今日の続き）→ Sinlab Study の始め方 →
+  シンラボ本体の一言紹介（もっと深く学びたい方へ）→ 最後に → 空白の青スライド（区切り）→
+  付録（どんなコミュニティ・会費・注意・フリー会員・Sinlab Knowledge）。付録もこのファイルに含めて最後に置く。
+  案内の主役は Sinlab Study（自分のペースで学べるので「時間が取れない」層の入口になる）。シンラボ本体は一言に留め、
+  詳細は付録で質問が出たときに見せる。
 - 各スライドの `_class` に付いている `tk` は、前回の体験会資料（Google スライド）の見た目に寄せる体験会専用クラス。外さない。
 - 差し替え欄（転記時に改変してよい唯一の箇所。見出し・箇条書きの型は残す）：
   1. 「今後のイベントのお知らせ」の小見出し（シリーズ名）と開催日程（件数は3〜4件が目安）
-  2. 「○月の主なシンラボ活動の紹介」の見出し月と箇条書きの中身
+  2. 「今日の続きは「Sinlab Study」で」の「今日の続きにおすすめ」の講座（その回のテーマに近い Sinlab Study の講座を1つ。
+     「講座名 第N回「タイトル」」の型は残す）
   3. アンケート・ご支援スライドの見出しと導入文にある体験会名「AI駆動開発」（例：「Web技術」。opening と同じ名前にそろえる。
      値は企画 Issue「基本情報」表の「体験会名」欄に書き、`taikenkai_slides.py wrap` がそこから読み取って一括で入れる）
   それ以外の文言・画像・順序は改変禁止。QR・写真を差し替えるときは `assets/taikenkai/` のファイルを置き換える。
@@ -120,16 +124,98 @@ opening 3枚目とほぼ同内容。導入文だけ「本〜継続するため�
 
 <!-- _paginate: skip -->
 <!-- _footer: '' -->
-<!-- _class: tk msg -->
+<!-- _class: tk pair wide -->
 
-## シンギュラリティ・ラボとは
+## 今日の続きは「Sinlab Study」で
 
-テクノロジーによる<br>社会課題解決を目指すコミュニティ
+**自分のペースで学べる** AIレビュー付きの学習サービス
 
-![w:620](../assets/taikenkai/photo-community.jpeg)
+- 動画・解説記事で学ぶ
+- 課題を出すとAIがすぐレビュー
+
+**今日の続きにおすすめ**<br>○○講座 第○回「○○○○」
+
+<p class="fig">
+<img src="../assets/taikenkai/screenshot-study-top.png" alt="Sinlab Study のトップ画面" width="500">
+https://study.future-tech-association.org/
+</p>
 
 <!--
-コミュニティの一言紹介。写真は集合カット（Singularity Lab の看板）。短く置いて次の「どんなコミュニティなの？」へ渡す。
+差し替え欄：「今日の続きにおすすめ」の講座名・回・タイトル。転記時に、その回のテーマに近い Sinlab Study の講座を1つ書く（「講座名 第N回「タイトル」」の型は残す）。
+話すポイント：「時間が取れない」方でも、今日の内容の続きをスキマ時間に進められる場として紹介する。動画で学ぶ → 課題提出 → AIがすぐレビュー、の流れを一言で。
+サービスサイト：https://study.future-tech-association.org/
+-->
+
+---
+
+<!-- _paginate: skip -->
+<!-- _footer: '' -->
+<!-- _class: tk pair lg -->
+
+## Sinlab Study は無料で始められます
+
+1. QRコードからサイトを開く
+2. Googleアカウントでログイン
+3. お試し公開コンテンツをすぐに学習
+
+※全コンテンツは月額1,500円（税込）
+
+<p class="fig">
+<img src="../assets/taikenkai/qr-study-service.png" alt="Sinlab Study のQR" width="260">
+Sinlab Study
+</p>
+
+<!--
+始め方は3ステップだけ。ログイン後すぐに、お試し公開コンテンツの閲覧・課題提出ができる（無料登録だけでは有料契約にならない）。
+全コンテンツを使うときはアプリ内で有料プラン（月額1,500円・税込）を申し込む。
+URL（チャット貼り付け用）：https://study.future-tech-association.org/
+紹介サイト：https://sinlab.future-tech-association.org/sinlab-study/
+-->
+
+---
+
+<!-- _paginate: skip -->
+<!-- _footer: '' -->
+<!-- _class: tk pair lg -->
+
+## もっと深く学びたい方へ
+
+Sinlab Study を運営する<br>**シンギュラリティ・ラボ**は、<br>仲間と講座・チーム開発・<br>交流ができるコミュニティです
+
+まずは無料の**フリー会員**から参加できます
+
+<p class="fig">
+<img src="../assets/taikenkai/qr-free-member.png" alt="フリー会員申込フォームQR" width="220">
+フリー会員申込フォーム
+</p>
+
+<!--
+シンラボ本体は一言で添えるだけにする（詳しくは付録のスライドで、質問が出たときに見せる）。
+フリー会員申込フォーム：https://docs.google.com/forms/d/e/1FAIpQLSeW5Trd4st5TU_zMzKZeZbFE0t0B6YGxNpJ0veAnhCkhE94eA/viewform
+-->
+
+---
+
+<!-- _paginate: skip -->
+<!-- _footer: '' -->
+<!-- _class: tk msg -->
+
+## 最後に
+
+今日の続きは Sinlab Study で、<br>自分のペースで学んでいきましょう！
+
+<!--
+クロージング。Sinlab Study をもう一度だけ促して終える。
+-->
+
+---
+
+<!-- _paginate: skip -->
+<!-- _footer: '' -->
+<!-- _class: split tk -->
+
+<!--
+区切りの空白スライド（右に青グラデのパネルだけ）。前回資料どおり「最後に」と付録の間に置く。
 -->
 
 ---
@@ -155,96 +241,6 @@ opening 3枚目とほぼ同内容。導入文だけ「本〜継続するため�
 
 <!--
 多様性・各自のペース・オフライン企画の3点。写真はオンライン交流会とお花見。
--->
-
----
-
-<!-- _paginate: skip -->
-<!-- _footer: '' -->
-<!-- _class: tk pair wide -->
-
-## シンラボ活動のご紹介「スキルアップ講座」
-
-月に数回、AI開発スキルや<br>基礎的なWeb技術講座（マークダウン等）<br>を開催。
-
-※アーカイブ動画や講座内で使った<br>記事サイトはいつでも閲覧可能
-
-<p class="fig">
-<img src="../assets/taikenkai/screenshot-knowledge.jpeg" alt="講座で使う記事サイト" width="440">
-</p>
-
-<!--
-講座の頻度と内容、アーカイブ・記事サイトがいつでも見られる点。画像は講座で使っている記事サイト（Sinlab Knowledge）。
--->
-
----
-
-<!-- _paginate: skip -->
-<!-- _footer: '' -->
-<!-- _class: tk pair wide -->
-
-## シンラボ活動のご紹介「Sinlab Study」
-
-**自分のペースで学習する** Web学習支援サービス（一部無料公開中）
-
-**主な機能**
-
-- 動画・スライドでの学習
-- 課題提出による実践力強化
-- 提出課題のAIレビュー
-
-| ![w:110](../assets/taikenkai/qr-study-service.png) | ![w:110](../assets/taikenkai/qr-study-site.png) |
-|:---:|:---:|
-| サービスサイト | 紹介サイト |
-
-<p class="fig">
-<img src="../assets/taikenkai/screenshot-study-top.png" alt="Sinlab Study のトップ画面" width="500">
-トップ画面
-</p>
-
-<!--
-サービスサイト：https://study.future-tech-association.org/
-紹介サイト：https://sinlab.future-tech-association.org/sinlab-study/
-QRの取り違えに注意（左＝サービスサイト / 右＝紹介サイト。元資料の配置）。
--->
-
----
-
-<!-- _paginate: skip -->
-<!-- _footer: '' -->
-<!-- _class: tk pair wide -->
-
-## シンラボ活動のご紹介「チーム開発体験」
-
-オンラインで集まって、<br>コミュニティ内で使うアプリを開発
-
-個人では体験できないチーム<br>ならではの開発フローや知見を<br>学べる
-
-見学のみも可
-
-<p class="fig">
-<img src="../assets/taikenkai/photo-team-dev.jpeg" alt="チーム開発のイメージ" width="460">
-</p>
-
-<!--
-オンラインでのチーム開発。個人開発では得にくいフロー・知見が学べること、見学だけでも参加できることを添える。
--->
-
----
-
-<!-- _paginate: skip -->
-<!-- _footer: '' -->
-<!-- _class: tk big -->
-
-## 9月の主なシンラボ活動の紹介
-
-- AI駆動開発の解説（AIを使ったGAS開発方法）
-- Web技術の解説講座（DevToolsの解説）
-- Webアプリのチーム開発
-- もくもく会
-
-<!--
-差し替え欄：見出しの月と箇条書きの中身を、転記時に直近月の活動へ更新する。箇条書き4項目の型は残す。
 -->
 
 ---
@@ -302,30 +298,6 @@ QRの取り違えに注意（左＝サービスサイト / 右＝紹介サイト
 <!--
 有料会員の前段として無料のフリー会員を案内する（Slack交流・体験会・限定資料閲覧）。
 申込フォーム：https://docs.google.com/forms/d/e/1FAIpQLSeW5Trd4st5TU_zMzKZeZbFE0t0B6YGxNpJ0veAnhCkhE94eA/viewform
--->
-
----
-
-<!-- _paginate: skip -->
-<!-- _footer: '' -->
-<!-- _class: tk msg -->
-
-## 最後に
-
-シンラボの仲間と一緒に、<br>スキルを高めて新しい価値を<br>創り出していきましょう！
-
-<!--
-クロージング。余韻を残して終える。
--->
-
----
-
-<!-- _paginate: skip -->
-<!-- _footer: '' -->
-<!-- _class: split tk -->
-
-<!--
-区切りの空白スライド（右に青グラデのパネルだけ）。前回資料どおり「最後に」と付録の間に置く。
 -->
 
 ---
